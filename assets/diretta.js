@@ -114,6 +114,29 @@
     return '<b><span>' + p[0] + '</span><i>:</i><span>' + p[1] + '</span></b>';
   }
 
+  /* Linea del tempo: ogni episodio al minuto in cui è accaduto.
+     Verde i nostri gol, rosso quelli subiti, ambra le penalità. */
+  function lineaTempo(p) {
+    function minuti(t) {
+      if (!/^\d+:\d+$/.test(t || '')) return null;
+      var q = t.split(':');
+      return (+q[0]) + (+q[1]) / 60;
+    }
+    var tacche = (p.tutti || []).map(function (e) {
+      var m = minuti(e.minuto);
+      if (m === null) return '';
+      var pos = Math.max(0, Math.min(m / 60, 1)) * 100;
+      var cls = e.tipo === 'penalita' ? 'pen'
+        : (e.squadra.indexOf('Ticino Unihockey') === 0 ? 'noi' : 'loro');
+      var che = e.tipo === 'penalita' ? 'Penalità' : ('Gol ' + e.punti);
+      return '<span class="tacca ' + cls + '" style="left:' + pos.toFixed(1) + '%" ' +
+        'title="' + e.minuto + ' · ' + che + ' · ' + e.squadra + '"></span>';
+    }).join('');
+    return '<div class="dir-linea"><div class="asse">' + tacche + '</div>' +
+      '<div class="tempi"><span>inizio</span><span>20\'</span><span>40\'</span><span>60\'</span></div>' +
+      '</div>';
+  }
+
   function stemma(url, nome) {
     if (url) {
       return '<span class="dir-stemma"><img src="' + url + '" alt="" loading="lazy"></span>';
@@ -175,7 +198,7 @@
                       punti: e.punti || '', tipo: e.tipo });
       }
     });
-    return { punti: punti, tempo: tempo, finita: finita,
+    return { punti: punti, tempo: tempo, finita: finita, tutti: elenco,
              eventi: elenco.slice(-6).reverse(), casa: casa, ospite: ospite };
   }
 
@@ -192,12 +215,24 @@
 
     var selettore = '';
     if (partite.length > 1) {
-      selettore = '<div class="dir-scelta" role="tablist" aria-label="Partita da seguire">' +
+      selettore = '<div class="dir-pannello-partite">' +
+        '<p class="dir-pannello-titolo"><span class="dir-vivo"></span>' + partite.length +
+          ' partite in corso</p>' +
+        '<div class="dir-piastre" role="tablist" aria-label="Partita da seguire">' +
         partite.map(function (q, i) {
-          return '<button type="button" role="tab" aria-selected="' + (i === scelta) + '" data-i="' + i + '">' +
-            '<b>' + etichetta(q) + '</b><span>' + q.punti + '</span>' +
-            '<i>' + (q.finita ? 'finita · ' : '') + avversario(q) + '</i></button>';
-        }).join('') + '</div>';
+          var pz = q.punti.split(':');
+          var u = q.eventi[0];
+          return '<button type="button" role="tab" class="dir-piastra" data-i="' + i + '" ' +
+            'aria-selected="' + (i === scelta) + '">' +
+            '<span class="cat">' + etichetta(q) + '</span>' +
+            '<span class="riga' + (+pz[0] > +pz[1] ? ' vince' : '') + '">' +
+              stemma(q.stemmaCasa, q.casa) + '<span>' + q.casa + '</span><b>' + pz[0] + '</b></span>' +
+            '<span class="riga' + (+pz[1] > +pz[0] ? ' vince' : '') + '">' +
+              stemma(q.stemmaOspite, q.ospite) + '<span>' + q.ospite + '</span><b>' + pz[1] + '</b></span>' +
+            '<span class="piede">' + (q.finita ? 'finita' : q.tempo + '° tempo') +
+              (u ? '<em>' + u.minuto + ' ' + (u.tipo === 'gol' ? 'gol' : 'penalità') + '</em>' : '') +
+            '</span></button>';
+        }).join('') + '</div></div>';
     }
 
     var eventi = p.eventi.map(function (e) {
@@ -241,17 +276,25 @@
           '</button>' +
         '</div>' +
         '<div class="dir-corpo">' +
-          selettore +
-          '<div class="dir-tabellone">' +
-            '<span class="dir-lato">' + stemma(p.stemmaCasa, p.casa) +
-              '<span class="dir-nome">' + p.casa + '</span></span>' +
-            tabellone(p.punti) +
-            '<span class="dir-lato">' + stemma(p.stemmaOspite, p.ospite) +
-              '<span class="dir-nome">' + p.ospite + '</span></span>' +
+          '<div class="dir-tab">' +
+            '<div class="dir-tab-alto">' +
+              '<span class="cat">' + etichetta(p) + '</span>' +
+              '<span>' + torneoLeggibile(p.torneo) + '</span>' +
+              '<span>' + stato + '</span>' +
+              '<span class="sp"></span>' +
+              '<span>' + (p.dove || '') + '</span>' +
+            '</div>' +
+            '<div class="dir-tab-corpo">' +
+              '<div class="dir-tab-sq">' + stemma(p.stemmaCasa, p.casa) +
+                '<span><b>' + p.casa + '</b><small>casa</small></span></div>' +
+              tabellone(p.punti) +
+              '<div class="dir-tab-sq ospite">' + stemma(p.stemmaOspite, p.ospite) +
+                '<span><b>' + p.ospite + '</b><small>ospite</small></span></div>' +
+            '</div>' +
+            lineaTempo(p) +
           '</div>' +
-          '<p class="dir-riga">' + torneoLeggibile(p.torneo) + ' · ' + stato +
-            (p.dove ? ' · ' + p.dove : '') + '</p>' +
           '<ul class="dir-eventi">' + eventi + '</ul>' +
+          selettore +
           (demo ? '<p class="dir-nota">Simulazione su partite vere in calendario ' +
                   '(13 settembre): squadre, categorie e palestre sono reali, i punteggi ' +
                   'generati. Dal vivo qui compaiono anche i marcatori.</p>'
@@ -260,7 +303,7 @@
       '</div>';
 
     radice.setAttribute('data-visibile', 'true');
-    [].forEach.call(radice.querySelectorAll('.dir-scelta button'), function (b) {
+    [].forEach.call(radice.querySelectorAll('.dir-piastra'), function (b) {
       b.addEventListener('click', function () {
         scelta = +b.getAttribute('data-i');
         statoAperto = true;
