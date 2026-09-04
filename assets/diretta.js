@@ -122,6 +122,18 @@
     return '<span class="dir-stemma dir-stemma-vuoto">' + i + '</span>';
   }
 
+  /* «Junioren U16 C Gruppe 4» → «Juniores U16 C · girone 4» */
+  function torneoLeggibile(t) {
+    if (!t) return '';
+    var pezzi = String(t).split(/\s+Gruppe\s+/);
+    var base = pezzi[0].replace(/\s+$/, '');
+    var nome = CATEGORIE[base] ? ('Junioren' === base.split(' ')[0]
+      ? base.replace('Junioren', 'Juniores') : CATEGORIE[base]) : base.replace('Junioren', 'Juniores');
+    if (base === 'Mobiliar Unihockey Cup Männer') nome = 'Coppa svizzera';
+    if (base === 'Herren NLB') nome = 'LNB maschile';
+    return nome + (pezzi[1] ? ' · girone ' + pezzi[1] : '');
+  }
+
   function avversario(p) {
     return p.casa.indexOf('Ticino Unihockey') === 0 ? p.ospite : p.casa;
   }
@@ -237,11 +249,12 @@
             '<span class="dir-lato">' + stemma(p.stemmaOspite, p.ospite) +
               '<span class="dir-nome">' + p.ospite + '</span></span>' +
           '</div>' +
-          '<p class="dir-riga">' + (p.torneo || '') + ' · ' + stato +
+          '<p class="dir-riga">' + torneoLeggibile(p.torneo) + ' · ' + stato +
             (p.dove ? ' · ' + p.dove : '') + '</p>' +
           '<ul class="dir-eventi">' + eventi + '</ul>' +
-          (demo ? '<p class="dir-nota">Riproduzione di una partita vera già giocata, ' +
-                  'per mostrare il funzionamento.</p>'
+          (demo ? '<p class="dir-nota">Simulazione su partite vere in calendario ' +
+                  '(13 settembre): squadre, categorie e palestre sono reali, i punteggi ' +
+                  'generati. Dal vivo qui compaiono anche i marcatori.</p>'
                 : '<p class="dir-nota">Dati da swiss unihockey, aggiornati circa ogni minuto.</p>') +
         '</div>' +
       '</div>';

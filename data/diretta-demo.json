@@ -1,9 +1,11 @@
 [
  {
-  "casa": "Reinacher Sportverein",
+  "casa": "UH Eagles Sementina",
   "ospite": "Ticino Unihockey",
-  "torneo": "Coppa svizzera",
-  "dove": "Surbaum Sporthalle, Reinach",
+  "torneo": "Junioren U16 C Gruppe 4",
+  "dove": "Sporthalle Wolfsmatt, Ruswil",
+  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/i2lyfgk7cskoywufzeub.png",
+  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png",
   "eventi": [
    [
     "00:00",
@@ -12,28 +14,16 @@
     ""
    ],
    [
-    "12:30",
+    "04:28",
     "Torschütze 1:0",
-    "Reinacher Sportverein",
-    "M. Lombardi (S. Sutter)"
+    "UH Eagles Sementina",
+    ""
    ],
    [
-    "",
-    "Penalty verschossen",
-    "Ticino Unihockey",
-    "Z. Boscolo"
-   ],
-   [
-    "14:20",
+    "17:59",
     "Torschütze 1:1",
     "Ticino Unihockey",
-    "D. Bazzuri (M. Tomatis)"
-   ],
-   [
-    "14:34",
-    "Torschütze 1:2",
-    "Ticino Unihockey",
-    "L. Torriani (A. Tomatis)"
+    ""
    ],
    [
     "20:00",
@@ -48,52 +38,22 @@
     ""
    ],
    [
-    "25:18",
-    "Torschütze 1:3",
-    "Ticino Unihockey",
-    "D. Monighetti (G. Gervasoni)"
+    "23:41",
+    "Torschütze 2:1",
+    "UH Eagles Sementina",
+    ""
    ],
    [
-    "28:44",
-    "2'-Strafe (Unkorrekter Abstand)",
-    "Ticino Unihockey",
-    "E. Ciapini"
-   ],
-   [
-    "32:31",
-    "Torschütze 1:4",
-    "Ticino Unihockey",
-    "A. Ghisla"
-   ],
-   [
-    "33:45",
-    "Torschütze 1:5",
-    "Ticino Unihockey",
-    "G. Gervasoni (M. Bazzuri)"
-   ],
-   [
-    "34:50",
-    "Torschütze 1:6",
-    "Ticino Unihockey",
-    "Z. Rossetti"
-   ],
-   [
-    "34:58",
-    "Torschütze 2:6",
-    "Reinacher Sportverein",
-    "L. Weiss (L. Stroppa)"
-   ],
-   [
-    "36:36",
+    "26:46",
     "2'-Strafe (Stossen)",
-    "Ticino Unihockey",
-    "D. Bazzuri"
+    "UH Eagles Sementina",
+    ""
    ],
    [
-    "37:23",
-    "Torschütze 2:7",
-    "Ticino Unihockey",
-    "Z. Boscolo (A. Tomatis)"
+    "31:37",
+    "Torschütze 3:1",
+    "UH Eagles Sementina",
+    ""
    ],
    [
     "40:00",
@@ -108,46 +68,16 @@
     ""
    ],
    [
-    "41:15",
-    "Torschütze 2:8",
+    "48:36",
+    "Torschütze 3:2",
     "Ticino Unihockey",
-    "D. Monighetti (G. Gervasoni)"
+    ""
    ],
    [
-    "41:32",
-    "Torschütze 2:9",
-    "Ticino Unihockey",
-    "E. Ciapini (D. Monighetti)"
-   ],
-   [
-    "44:06",
-    "2'-Strafe (Stockschlag)",
-    "Ticino Unihockey",
-    "E. Airaghi"
-   ],
-   [
-    "49:32",
-    "2'-Strafe (Stockschlag)",
-    "Reinacher Sportverein",
-    "N. Erni"
-   ],
-   [
-    "50:27",
-    "Torschütze 2:10",
-    "Ticino Unihockey",
-    "M. Bazzuri (A. Tomatis)"
-   ],
-   [
-    "53:15",
-    "Torschütze 2:11",
-    "Ticino Unihockey",
-    "E. Ciapini (G. Gervasoni)"
-   ],
-   [
-    "59:34",
-    "Torschütze 2:12",
-    "Ticino Unihockey",
-    "G. Gervasoni (D. Monighetti)"
+    "55:25",
+    "Torschütze 4:2",
+    "UH Eagles Sementina",
+    ""
    ],
    [
     "",
@@ -155,15 +85,15 @@
     "",
     ""
    ]
-  ],
-  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/zhcpegxoskijdsrzia5i.png",
-  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png"
+  ]
  },
  {
-  "casa": "Unihockey Schüpfheim",
-  "ospite": "Ticino Unihockey",
-  "torneo": "Coppa svizzera",
-  "dove": "Sporthalle Moosmättili, Schüpfheim",
+  "casa": "Ticino Unihockey I",
+  "ospite": "Unihockey Luzern I",
+  "torneo": "Junioren U14 B Gruppe 7",
+  "dove": "Breitli, Buochs",
+  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png",
+  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/lbqsb89pjsiupfhfgqs0.png",
   "eventi": [
    [
     "00:00",
@@ -172,28 +102,16 @@
     ""
    ],
    [
-    "13:41",
-    "Torschütze 1:0",
-    "Unihockey Schüpfheim",
-    "D. Aeschbacher (S. Schnider)"
+    "09:03",
+    "Torschütze 0:1",
+    "Unihockey Luzern I",
+    ""
    ],
    [
-    "15:04",
+    "14:38",
     "Torschütze 1:1",
-    "Ticino Unihockey",
-    "M. Gadoni (A. Bazzuri)"
-   ],
-   [
-    "19:30",
-    "2'-Strafe (Wiederholte Vergehen eines Teams)",
-    "Ticino Unihockey",
-    "A. Tomatis"
-   ],
-   [
-    "19:43",
-    "Torschütze 2:1",
-    "Unihockey Schüpfheim",
-    "J. Bucher (R. Stalder)"
+    "Ticino Unihockey I",
+    ""
    ],
    [
     "20:00",
@@ -208,28 +126,22 @@
     ""
    ],
    [
-    "27:35",
+    "28:16",
+    "Torschütze 2:1",
+    "Ticino Unihockey I",
+    ""
+   ],
+   [
+    "35:25",
+    "2'-Strafe (Haken)",
+    "Unihockey Luzern I",
+    ""
+   ],
+   [
+    "37:19",
     "Torschütze 2:2",
-    "Ticino Unihockey",
-    "M. Bazzuri (A. Bazzuri)"
-   ],
-   [
-    "27:58",
-    "Torschütze 2:3",
-    "Ticino Unihockey",
-    "I. Andreetta (D. Bazzuri)"
-   ],
-   [
-    "32:50",
-    "2'-Strafe (Stossen)",
-    "Ticino Unihockey",
-    "D. Monighetti"
-   ],
-   [
-    "39:13",
-    "2'-Strafe (Überharter Körpereinsatz)",
-    "Ticino Unihockey",
-    "D. Bazzuri"
+    "Unihockey Luzern I",
+    ""
    ],
    [
     "40:00",
@@ -244,34 +156,10 @@
     ""
    ],
    [
-    "41:52",
-    "2'-Strafe (Zu viele Spieler)",
-    "Ticino Unihockey",
-    "Z. Rossetti"
-   ],
-   [
-    "42:16",
-    "Torschütze 3:3",
-    "Unihockey Schüpfheim",
-    "D. Aeschbacher (A. Stadelmann)"
-   ],
-   [
-    "44:55",
-    "2'-Strafe (Hoher Stock)",
-    "Unihockey Schüpfheim",
-    "R. Kropf"
-   ],
-   [
-    "49:35",
-    "Torschütze 3:4",
-    "Ticino Unihockey",
-    "M. Tomatis (L. Koivisto)"
-   ],
-   [
-    "54:57",
-    "Torschütze 3:5",
-    "Ticino Unihockey",
-    "A. Tomatis (V. Heiska)"
+    "44:08",
+    "Torschütze 3:2",
+    "Ticino Unihockey I",
+    ""
    ],
    [
     "",
@@ -279,8 +167,176 @@
     "",
     ""
    ]
-  ],
-  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/o7qfonhnycpoc7k4wkzg.png",
-  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png"
+  ]
+ },
+ {
+  "casa": "Ticino Unihockey II",
+  "ospite": "Floorball Uri II",
+  "torneo": "Junioren U14 B Gruppe 7",
+  "dove": "Breitli, Buochs",
+  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png",
+  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/kumz05jqadslhk3mpqp5.png",
+  "eventi": [
+   [
+    "00:00",
+    "Spielbeginn",
+    "",
+    ""
+   ],
+   [
+    "06:42",
+    "Torschütze 1:0",
+    "Ticino Unihockey II",
+    ""
+   ],
+   [
+    "18:18",
+    "2'-Strafe (Hoher Stock)",
+    "Ticino Unihockey II",
+    ""
+   ],
+   [
+    "20:00",
+    "Ende 1. Drittel",
+    "",
+    ""
+   ],
+   [
+    "20:00",
+    "Beginn 2. Drittel",
+    "",
+    ""
+   ],
+   [
+    "21:27",
+    "Torschütze 2:0",
+    "Ticino Unihockey II",
+    ""
+   ],
+   [
+    "33:51",
+    "Torschütze 2:1",
+    "Floorball Uri II",
+    ""
+   ],
+   [
+    "40:00",
+    "Ende 2. Drittel",
+    "",
+    ""
+   ],
+   [
+    "40:00",
+    "Beginn 3. Drittel",
+    "",
+    ""
+   ],
+   [
+    "41:47",
+    "Torschütze 3:1",
+    "Ticino Unihockey II",
+    ""
+   ],
+   [
+    "52:04",
+    "Torschütze 4:1",
+    "Ticino Unihockey II",
+    ""
+   ],
+   [
+    "58:46",
+    "Torschütze 4:2",
+    "Floorball Uri II",
+    ""
+   ],
+   [
+    "",
+    "Spielende",
+    "",
+    ""
+   ]
+  ]
+ },
+ {
+  "casa": "Ticino Unihockey",
+  "ospite": "Regazzi Verbano UH Gordola",
+  "torneo": "Junioren U16 C Gruppe 4",
+  "dove": "Sporthalle Wolfsmatt, Ruswil",
+  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png",
+  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/u1c4jmvhrxnjpzgwsylg.png",
+  "eventi": [
+   [
+    "00:00",
+    "Spielbeginn",
+    "",
+    ""
+   ],
+   [
+    "12:24",
+    "Torschütze 0:1",
+    "Regazzi Verbano UH Gordola",
+    ""
+   ],
+   [
+    "19:13",
+    "Torschütze 1:1",
+    "Ticino Unihockey",
+    ""
+   ],
+   [
+    "20:00",
+    "Ende 1. Drittel",
+    "",
+    ""
+   ],
+   [
+    "20:00",
+    "Beginn 2. Drittel",
+    "",
+    ""
+   ],
+   [
+    "26:02",
+    "Torschütze 1:2",
+    "Regazzi Verbano UH Gordola",
+    ""
+   ],
+   [
+    "39:33",
+    "Torschütze 1:3",
+    "Regazzi Verbano UH Gordola",
+    ""
+   ],
+   [
+    "40:00",
+    "Ende 2. Drittel",
+    "",
+    ""
+   ],
+   [
+    "40:00",
+    "Beginn 3. Drittel",
+    "",
+    ""
+   ],
+   [
+    "44:04",
+    "2'-Strafe (Beinstellen)",
+    "Regazzi Verbano UH Gordola",
+    ""
+   ],
+   [
+    "50:50",
+    "Torschütze 2:3",
+    "Ticino Unihockey",
+    ""
+   ],
+   [
+    "",
+    "Spielende",
+    "",
+    ""
+   ]
+  ]
  }
 ]
