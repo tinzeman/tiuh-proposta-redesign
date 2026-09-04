@@ -85,7 +85,8 @@
     "",
     ""
    ]
-  ]
+  ],
+  "stato": "published"
  },
  {
   "casa": "Ticino Unihockey I",
@@ -167,7 +168,8 @@
     "",
     ""
    ]
-  ]
+  ],
+  "stato": "published"
  },
  {
   "casa": "Ticino Unihockey II",
@@ -255,7 +257,8 @@
     "",
     ""
    ]
-  ]
+  ],
+  "stato": "published"
  },
  {
   "casa": "Ticino Unihockey",
@@ -337,6 +340,7 @@
     "",
     ""
    ]
-  ]
+  ],
+  "stato": "published"
  }
 ]

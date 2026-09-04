@@ -15,6 +15,7 @@
 
   var lento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var API = 'https://api-v2.swissunihockey.ch/api';
+  var BO = 'https://api-v2.swissunihockey.ch';
   var CLUB = 435553, STAGIONE = 2026;
   var RITMO = 45000;              // ogni quanto ricontrollare, in millisecondi
   var PRIMA = 15 * 60000;         // quanto prima dell'inizio mostrare la barra
@@ -116,6 +117,35 @@
 
   /* Linea del tempo: ogni episodio al minuto in cui è accaduto.
      Verde i nostri gol, rosso quelli subiti, ambra le penalità. */
+  /* Parziali per tempo: li dà il referto di gara, uno per periodo. */
+  /* Nella simulazione i parziali si ricavano dagli eventi: dal vivo li dà il referto. */
+  function parzialiDaEventi(eventi, casa, fino) {
+    var out = [[0, 0], [0, 0], [0, 0]], periodo = 0;
+    eventi.forEach(function (c) {
+      var m = /^(\d+):(\d+)$/.exec(c[0]);
+      var min = m ? (+m[1]) + (+m[2]) / 60 : 999;
+      if (min > fino) return;
+      periodo = min >= 40 ? 2 : (min >= 20 ? 1 : 0);
+      if (/^Torschütze/.test(c[1])) {
+        if (c[2] === casa) out[periodo][0]++; else out[periodo][1]++;
+      }
+    });
+    return out.map(function (t, i) { return i <= periodo ? t : null; });
+  }
+
+  function parziali(p) {
+    if (!p.parziali || !p.parziali.length) return '';
+    var celle = p.parziali.map(function (t, i) {
+      if (t === null || t[0] === null) return '';
+      return '<span><i>' + (i + 1) + '° tempo</i><b>' + t[0] + ':' + t[1] + '</b></span>';
+    }).join('');
+    if (!celle) return '';
+    var extra = (p.supplementari ? '<span class="extra">supplementari</span>' : '') +
+                (p.rigori ? '<span class="extra">rigori</span>' : '') +
+                (p.spettatori ? '<span class="extra">' + p.spettatori + ' spettatori</span>' : '');
+    return '<div class="dir-parziali">' + celle + extra + '</div>';
+  }
+
   function lineaTempo(p) {
     function minuti(t) {
       if (!/^\d+:\d+$/.test(t || '')) return null;
@@ -291,6 +321,7 @@
               '<div class="dir-tab-sq ospite">' + stemma(p.stemmaOspite, p.ospite) +
                 '<span><b>' + p.ospite + '</b><small>ospite</small></span></div>' +
             '</div>' +
+            parziali(p) +
             lineaTempo(p) +
           '</div>' +
           '<ul class="dir-eventi">' + eventi + '</ul>' +
@@ -388,6 +419,7 @@
           var p = leggiEventi(fin, d.casa, d.ospite);
           p.id = 'demo' + i; p.torneo = d.torneo; p.dove = d.dove;
           p.stemmaCasa = d.stemmaCasa; p.stemmaOspite = d.stemmaOspite;
+          p.parziali = parzialiDaEventi(d.eventi, d.casa, tempoDemo);
           return p;
         });
         apriLaPrimaVolta();
@@ -430,7 +462,8 @@
     var presi = lista.map(function (g) {
       return Promise.all([
         chiedi(API + '/game_events/' + g.id),
-        chiedi(API + '/games/' + g.id).catch(function () { return null; })
+        chiedi(API + '/games/' + g.id).catch(function () { return null; }),
+        chiedi(BO + '/bo/games/' + g.id + '?set=game_report').catch(function () { return null; })
       ]).then(function (due) {
         var loghi = [];
         if (due[1]) {
@@ -442,7 +475,9 @@
             });
           });
         }
-        return { g: g, righe: righeDi(due[0]).map(function (r) { return r.celle; }), loghi: loghi };
+        var ref = (((due[2] || {}).list || [])[0] || {}).attrs || null;
+        return { g: g, righe: righeDi(due[0]).map(function (r) { return r.celle; }),
+                 loghi: loghi, referto: ref };
       }).catch(function () { return null; });
     });
     return Promise.all(presi).then(function (esiti) {
@@ -452,6 +487,17 @@
         var p = leggiEventi(e.righe, e.g.casa, e.g.ospite);
         p.id = e.g.id; p.torneo = e.g.torneo; p.dove = e.g.dove;
         p.stemmaCasa = e.loghi[0] || ''; p.stemmaOspite = e.loghi[1] || '';
+        var r = e.referto;
+        if (r) {
+          /* Il referto di gara è più affidabile della cronaca: dà lo stato
+             ufficiale, i parziali per tempo e, quando ci sono, gli spettatori. */
+          if (r.status === 'finished') p.finita = true;
+          if (r.score && r.score[0] !== null) p.punti = r.score[0] + ':' + r.score[1];
+          p.parziali = r.thirds || null;
+          p.spettatori = r.spectators || 0;
+          p.supplementari = !!r.prolongation_played;
+          p.rigori = !!r.penalty_shootout_played;
+        }
         (p.finita ? concluse : vive).push(p);
       });
       /* prima quelle in corso; se non ce n'è nessuna resta l'ultima conclusa */

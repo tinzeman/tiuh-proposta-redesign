@@ -602,3 +602,15 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-linea .tempi{display:flex; justify-content:space-between; margin-top:11px; font-size:.68rem;
   letter-spacing:.14em; text-transform:uppercase; color:#6E675C}
 @media (max-width:820px){.dir-linea{margin-top:22px}}
+
+/* parziali per tempo, dal referto di gara */
+.dir-parziali{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:24px;
+  position:relative}
+.dir-parziali span{background:rgba(255,255,255,.06); border-radius:9px; padding:8px 14px;
+  display:grid; justify-items:center; gap:2px; min-width:74px}
+.dir-parziali i{font-style:normal; font-size:.6rem; letter-spacing:.13em; text-transform:uppercase;
+  color:#6E675C}
+.dir-parziali b{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.02rem;
+  font-variant-numeric:tabular-nums; color:#D8D2C6}
+.dir-parziali .extra{display:flex; align-items:center; font-size:.7rem; letter-spacing:.12em;
+  text-transform:uppercase; color:#8C8578; font-weight:700; min-width:0}
