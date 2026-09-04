@@ -288,6 +288,153 @@
     });
   })();
 
+  /* ── statistiche dei giocatori ──────────────────────────
+     Gol e assist si ricavano dalla cronaca di ogni partita giocata.
+     Le partite già lette restano in memoria nel browser: a ogni visita si
+     scaricano solo quelle nuove, così la tabella si aggiorna da sola dopo
+     ogni giornata invece che a fine stagione. */
+  (function statistiche() {
+    var box = document.getElementById('statistiche');
+    if (!box) return;
+    var API = 'https://api-v2.swissunihockey.ch/api';
+    var CLUB = 435553, STAGIONE = 2026;
+    var competizione = box.getAttribute('data-competizione') || '';
+
+    function ricorda(chiave, valore) {
+      try { localStorage.setItem(chiave, JSON.stringify(valore)); } catch (e) {}
+    }
+    function ricordato(chiave) {
+      try {
+        var v = localStorage.getItem(chiave);
+        return v ? JSON.parse(v) : null;
+      } catch (e) { return null; }
+    }
+    function chiedi(u) {
+      return fetch(u, { mode: 'cors' }).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      });
+    }
+    function celle(row) {
+      return (row.cells || []).map(function (c) {
+        var t = c.text;
+        return Object.prototype.toString.call(t) === '[object Array]' ? t.join(' ')
+          : (t ? String(t) : '');
+      });
+    }
+
+    /* dalla cronaca di una partita: gol e assist dei nostri */
+    function estrai(json) {
+      var out = [];
+      (((json || {}).data || {}).regions || []).forEach(function (reg) {
+        (reg.rows || []).forEach(function (row) {
+          var c = celle(row);
+          if (c.length < 4 || c[1].indexOf('Torschütze') !== 0) return;
+          if (c[2].indexOf('Ticino Unihockey') !== 0) return;
+          var m = /^(.+?)\s*\((.+)\)\s*$/.exec((c[3] || '').trim());
+          out.push({ gol: (m ? m[1] : c[3]).trim(), assist: m ? m[2].trim() : '' });
+        });
+      });
+      return out;
+    }
+
+    function partiteDella(json, stagione) {
+      var out = [];
+      (((json || {}).data || {}).regions || []).forEach(function (reg) {
+        (reg.rows || []).forEach(function (row) {
+          var c = celle(row);
+          if (!c.length || c[0].indexOf('.') < 0) return;
+          if (competizione && c[2].indexOf(competizione) !== 0) return;
+          if (!c[5] || c[5].indexOf(':') < 0) return;       // non ancora giocata
+          var ids = (row.link || {}).ids || [];
+          if (ids.length) out.push(ids[0]);
+        });
+      });
+      return out;
+    }
+
+    function insieme(elenco, quanti, lavoro) {
+      var i = 0, esiti = [];
+      function prossimo() {
+        if (i >= elenco.length) return Promise.resolve();
+        var mio = i++;
+        return lavoro(elenco[mio]).then(function (r) {
+          esiti[mio] = r;
+          return prossimo();
+        });
+      }
+      var fili = [];
+      for (var k = 0; k < Math.min(quanti, elenco.length); k++) fili.push(prossimo());
+      return Promise.all(fili).then(function () { return esiti; });
+    }
+
+    function disegna(gol, assist, partite, stagione) {
+      var nomi = {};
+      Object.keys(gol).forEach(function (n) { nomi[n] = 1; });
+      Object.keys(assist).forEach(function (n) { nomi[n] = 1; });
+      var elenco = Object.keys(nomi).map(function (n) {
+        return { nome: n, g: gol[n] || 0, a: assist[n] || 0, p: (gol[n] || 0) + (assist[n] || 0) };
+      }).sort(function (x, y) { return y.p - x.p || y.g - x.g || x.nome.localeCompare(y.nome); });
+
+      if (!elenco.length) {
+        box.innerHTML = '<p class="vuota">Le statistiche compariranno dopo le prime partite.</p>';
+        return;
+      }
+      var righe = elenco.map(function (r, i) {
+        return '<tr' + (i === 0 ? ' class="primo"' : '') + '><td>' + (i + 1) + '</td>' +
+          '<td>' + r.nome + '</td><td>' + r.g + '</td><td>' + r.a + '</td>' +
+          '<td class="punti">' + r.p + '</td></tr>';
+      }).join('');
+      box.innerHTML =
+        '<p class="stato">' + (stagione === STAGIONE
+          ? 'Stagione 2026/27 · ' + partite + ' partite giocate'
+          : 'La stagione 2026/27 non è ancora cominciata — qui sotto la stagione 2025/26, ' +
+            partite + ' partite') + '</p>' +
+        '<table><thead><tr><th>#</th><th>Giocatore</th><th>Gol</th><th>Assist</th>' +
+        '<th>Punti</th></tr></thead><tbody>' + righe + '</tbody></table>' +
+        '<p class="fonte">Dai referti di swiss unihockey · si aggiorna dopo ogni partita</p>';
+    }
+
+    function conta(stagione) {
+      return chiedi(API + '/games?mode=club&club_id=' + CLUB + '&season=' + stagione +
+                    '&games_per_page=300')
+        .then(function (j) {
+          var ids = partiteDella(j, stagione);
+          if (!ids.length) return { vuoto: true, stagione: stagione };
+          var gol = {}, assist = {};
+          return insieme(ids, 6, function (id) {
+            var chiave = 'tiuh-gol-' + id;
+            var salvato = ricordato(chiave);
+            if (salvato) return Promise.resolve(salvato);
+            return chiedi(API + '/game_events/' + id).then(function (e) {
+              var v = estrai(e);
+              ricorda(chiave, v);
+              return v;
+            }).catch(function () { return []; });
+          }).then(function (esiti) {
+            esiti.forEach(function (lista) {
+              (lista || []).forEach(function (ev) {
+                if (ev.gol) gol[ev.gol] = (gol[ev.gol] || 0) + 1;
+                if (ev.assist) assist[ev.assist] = (assist[ev.assist] || 0) + 1;
+              });
+            });
+            return { gol: gol, assist: assist, partite: ids.length, stagione: stagione };
+          });
+        });
+    }
+
+    box.innerHTML = '<p class="vuota">Calcolo in corso…</p>';
+    conta(STAGIONE).then(function (r) {
+      if (!r.vuoto) { disegna(r.gol, r.assist, r.partite, r.stagione); return; }
+      return conta(STAGIONE - 1).then(function (v) {
+        if (v.vuoto) disegna({}, {}, 0, STAGIONE);
+        else disegna(v.gol, v.assist, v.partite, v.stagione);
+      });
+    }).catch(function () {
+      box.innerHTML = '<p class="vuota">Statistiche non disponibili in questo momento.</p>';
+    });
+  })();
+
   /* ── partite da swiss unihockey ── */
   (function partite() {
     var lista = $('#calList'), prossima = $('#pxChi');
