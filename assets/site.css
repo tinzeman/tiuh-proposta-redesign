@@ -19,6 +19,7 @@ a{color:inherit; text-decoration:none}
 .sr-only{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap}
 :focus-visible{outline:3px solid var(--navy); outline-offset:3px; box-shadow:0 0 0 3px #fff; border-radius:5px}
 section[id],div[id],footer[id],#contenuto{scroll-margin-top:104px}
+@media (max-width:700px){section[id],div[id],footer[id],#contenuto{scroll-margin-top:100px}}
 .eyebrow{font-family:'Figtree',sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.15em;
   text-transform:uppercase; color:var(--red-ink); margin-bottom:14px; display:block}
 .eyebrow.navy{color:var(--navy)}
@@ -503,3 +504,12 @@ figure.shot figcaption{font-size:.8rem; color:var(--ink-3); margin-top:9px; font
   .lang a,.lang b{padding:9px 11px}
   .crumbs a{display:inline-block; padding:5px 0}
 }
+
+/* le righe dei risultati usano la stessa struttura del calendario:
+   diamo loro anche la stessa tipografia, altrimenti competizione e
+   nome squadra finiscono attaccati */
+.results .when b{display:block; font-family:'Archivo',sans-serif; font-size:.98rem; letter-spacing:-.01em}
+.results .when span{font-size:.82rem; color:var(--ink-3)}
+.results .who b{font-size:1.02rem; font-weight:600}
+.results .who b em{font-style:normal; color:var(--red-ink); font-weight:800}
+.results .who span{display:block; font-size:.83rem; color:var(--ink-3); margin-top:1px}

@@ -34,6 +34,42 @@
     });
     small.addEventListener('change', function (e) { if (!e.matches) setMenu(false); });
 
+    function chiudiTendine() {
+      $$('nav.main > div[data-open="true"]').forEach(function (item) {
+        item.setAttribute('data-open', 'false');
+        var t = $('a.top', item);
+        if (t) t.setAttribute('aria-expanded', 'false');
+      });
+    }
+
+    /* Toccando una voce il menu deve chiudersi. Se la voce punta a una sezione
+       della pagina che stiamo già guardando il browser non ricarica nulla, quindi
+       ci pensiamo noi: chiudiamo il pannello e poi portiamo la sezione in vista. */
+    nav.addEventListener('click', function (e) {
+      var a = e.target.closest && e.target.closest('a');
+      if (!a || !small.matches) return;
+
+      setMenu(false);
+      chiudiTendine();
+
+      var href = a.getAttribute('href') || '';
+      var tag = href.indexOf('#');
+      if (tag < 0) return;                       // altra pagina: ci pensa il caricamento
+
+      var file = href.slice(0, tag);
+      var qui = location.pathname.split('/').pop() || 'index.html';
+      if (file && file !== qui) return;           // altra pagina, con ancora
+
+      var meta = document.getElementById(href.slice(tag + 1));
+      if (!meta) return;
+
+      e.preventDefault();
+      if (history.replaceState) history.replaceState(null, '', href.slice(tag));
+      requestAnimationFrame(function () {
+        meta.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      });
+    });
+
     $$('nav.main > div').forEach(function (item) {
       var drop = $('.drop', item);
       if (!drop) return;
