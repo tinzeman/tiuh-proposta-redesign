@@ -494,7 +494,7 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-eventi .chi .dir-sq.sola{font-size:.93rem; color:var(--ink-2)}
 .dir-nota{text-align:center; color:var(--ink-3); font-size:.8rem; margin-top:20px}
 @media (max-width:820px){
-  .dir-barra{gap:14px; padding:14px 16px 14px 10px}
+  .dir-barra{gap:14px; padding:14px 16px}
   .dir-stato{font-size:.82rem}
   .dir-corpo{padding:24px 18px 34px; justify-content:flex-start}
   .dir-testa{padding:14px 18px}
@@ -792,8 +792,10 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
     column-gap:14px; row-gap:4px; width:100%; text-align:left}
   /* la pastiglia ha 8px di respiro interno: senza compensarli la sigla
      resterebbe rientrata rispetto ai nomi qui sotto */
-  .dir-faccia u{padding:2px 6px; font-size:.84rem; top:0}
-  .dir-faccia .dir-nome{padding-left:6px}
+  /* La pastiglia è un elemento grafico: l'occhio segue il suo bordo, non il
+     testo dentro. Il bordo sta sulla stessa verticale dei nomi, e il respiro
+     interno è stretto perché la sigla non risulti rientrata. */
+  .dir-faccia u{padding:2px 4px; border-radius:5px; font-size:.84rem; top:0}
   .dir-faccia .dir-squadre{display:contents}
   .dir-faccia u{grid-column:1; grid-row:1; justify-self:start}
   .dir-faccia .dir-stato{grid-column:2; grid-row:1; justify-self:end; margin:0}
