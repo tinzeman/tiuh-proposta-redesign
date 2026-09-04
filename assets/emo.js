@@ -779,4 +779,241 @@
       clearTimeout(guardia); ripiego();
     }
   })();
+
+  /* ── scheda del giocatore ───────────────────────────────
+     Il ritratto va a tutto schermo e i dati salgono su di esso mentre si
+     scorre: la foto si muove più piano del testo, il numero più in fretta.
+     È la stessa grammatica del resto del sito, applicata a una persona sola. */
+  (function giocatore() {
+    var pista = $('.pista'), dati = $('.dossier');
+    if (!pista || !dati) return;
+    var ROSA;
+    try { ROSA = JSON.parse(dati.textContent); } catch (e) { return; }
+    if (!ROSA || !ROSA.length) return;
+
+    var API = 'https://api-v2.swissunihockey.ch/api';
+    var schermo = null, quale = -1, filo = 0;
+
+    function eta(nato) {
+      var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(nato || '');
+      if (!m) return '';
+      var o = new Date(), a = o.getFullYear() - (+m[3]);
+      var mese = o.getMonth() + 1, giorno = o.getDate();
+      if (mese < +m[2] || (mese === +m[2] && giorno < +m[1])) a--;
+      return a > 0 && a < 120 ? a + ' anni' : '';
+    }
+    function dataLunga(nato) {
+      var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(nato || '');
+      var mesi = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio',
+                  'agosto', 'settembre', 'ottobre', 'novembre', 'dicembre'];
+      return m ? (+m[1]) + ' ' + mesi[+m[2] - 1] + ' ' + m[3] : '';
+    }
+    function fatto(et, v) {
+      return v ? '<div class="gio-fatto"><dt>' + et + '</dt><dd>' + v + '</dd></div>' : '';
+    }
+    function celle(row) {
+      return (row.cells || []).map(function (c) {
+        var t = c.text;
+        return Object.prototype.toString.call(t) === '[object Array]' ? t.join(' ')
+          : (t == null ? '' : String(t));
+      });
+    }
+
+    function telaio(g) {
+      var nome = g.nome.split(' ');
+      var cognome = nome.length > 1 ? nome.slice(1).join(' ') : '';
+      var sotto = [g.ruolo, eta(g.nato)].filter(Boolean).join(' · ');
+      return '<div class="gio-sfondo"><img src="' + g.foto + '" alt=""></div>' +
+        '<div class="gio-velo"></div>' +
+        '<div class="gio-scorri" tabindex="-1">' +
+          '<div class="gio-apice">' +
+            '<span class="gio-numero" aria-hidden="true">' + (+g.n || g.n) + '</span>' +
+            '<h2 class="gio-nome"><span>' + nome[0] + '</span>' +
+              (cognome ? '<span>' + cognome + '</span>' : '') + '</h2>' +
+            (sotto ? '<p class="gio-ruolo">' + sotto + '</p>' : '') +
+            '<span class="gio-giu" aria-hidden="true"></span>' +
+          '</div>' +
+          '<div class="gio-foglio">' +
+            '<dl class="gio-fatti">' +
+              fatto('Numero', g.n ? '#' + (+g.n || g.n) : '') +
+              fatto('Ruolo', g.ruolo) +
+              fatto('Nato il', dataLunga(g.nato)) +
+              fatto('Nazionalità', g.paese) +
+              fatto('Altezza', g.altezza) +
+              fatto('Peso', g.peso) +
+            '</dl>' +
+            '<div class="gio-numeri"><p class="gio-attesa">Carriera in arrivo…</p></div>' +
+            (g.sponsor.length
+              ? '<div class="gio-sponsor"><h3>Sponsor personale</h3><div>' +
+                g.sponsor.map(function (s) {
+                  return '<a href="' + s.sito + '" target="_blank" rel="noopener">' +
+                    '<img src="' + s.img + '" alt="" loading="lazy"></a>';
+                }).join('') + '</div></div>'
+              : '') +
+          '</div>' +
+        '</div>' +
+        '<button type="button" class="gio-chiudi" aria-label="Chiudi la scheda">' +
+          '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>' +
+        (ROSA.length > 1
+          ? '<button type="button" class="gio-passo prec" aria-label="Giocatore precedente">' +
+              '<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>' +
+            '<button type="button" class="gio-passo succ" aria-label="Giocatore successivo">' +
+              '<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>'
+          : '');
+    }
+
+    /* La carriera arriva dalla federazione: una richiesta sola, e solo
+       quando la scheda si apre davvero. */
+    function carriera(g, mio) {
+      var box = schermo.querySelector('.gio-numeri');
+      if (!box || !g.pid) { if (box) box.innerHTML = ''; return; }
+      var chiave = 'tiuh-car2-' + g.pid;
+      function rendi(righe) {
+        if (mio !== filo || !schermo) return;
+        var b = schermo.querySelector('.gio-numeri');
+        if (!b) return;
+        if (!righe.length) { b.innerHTML = ''; return; }
+        var nostre = righe.filter(function (r) { return r.club.indexOf('Ticino') >= 0; });
+        var tot = nostre.reduce(function (a, r) {
+          return { p: a.p + r.p, g: a.g + r.g, a: a.a + r.a, n: a.n + r.n };
+        }, { p: 0, g: 0, a: 0, n: 0 });
+        var quante = {};
+        nostre.forEach(function (r) { quante[r.stagione] = 1; });
+        b.innerHTML =
+          '<h3>In rossoblù</h3>' +
+          '<div class="gio-cifre">' +
+            '<div><b>' + Object.keys(quante).length + '</b><span>stagioni</span></div>' +
+            '<div><b>' + tot.p + '</b><span>partite</span></div>' +
+            '<div><b>' + tot.g + '</b><span>gol</span></div>' +
+            '<div><b>' + tot.a + '</b><span>assist</span></div>' +
+            '<div><b>' + (tot.g + tot.a) + '</b><span>punti</span></div>' +
+          '</div>' +
+          '<h3>Stagione per stagione</h3>' +
+          '<div class="gio-tabella"><table><thead><tr><th>Stagione</th><th>Lega</th>' +
+          '<th>Pt.</th><th>Gol</th><th>Ass.</th><th>Punti</th></tr></thead><tbody>' +
+          righe.map(function (r, i) {
+            return '<tr' + (i === 0 ? ' class="prima"' : '') + '><td>' + r.stagione + '</td>' +
+              '<td>' + r.lega + '</td><td>' + r.p + '</td><td>' + r.g + '</td>' +
+              '<td>' + r.a + '</td><td class="punti">' + (r.g + r.a) + '</td></tr>';
+          }).join('') + '</tbody></table></div>' +
+          '<p class="gio-fonte">Carriera da swiss unihockey.</p>';
+      }
+      var salvato = null;
+      try { salvato = JSON.parse(localStorage.getItem(chiave) || 'null'); } catch (e) {}
+      if (salvato) { rendi(salvato); return; }
+      fetch(API + '/players/' + g.pid + '/statistics', { mode: 'cors' })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (j) {
+          var righe = [];
+          (((j.data || {}).regions) || []).forEach(function (reg) {
+            (reg.rows || []).forEach(function (row) {
+              var c = celle(row);
+              if (c.length < 7) return;
+              righe.push({ stagione: c[0], lega: c[1], club: c[2],
+                           p: +c[3] || 0, g: +c[4] || 0, a: +c[5] || 0 });
+            });
+          });
+          try { localStorage.setItem(chiave, JSON.stringify(righe)); } catch (e) {}
+          rendi(righe);
+        })
+        .catch(function () {
+          if (mio !== filo || !schermo) return;
+          var b = schermo.querySelector('.gio-numeri');
+          if (b) b.innerHTML = '';
+        });
+    }
+
+    /* Il parallasse: la foto scorre a un terzo, il numero quasi in fretta,
+       il nome nel mezzo. Tre velocità bastano a dare profondità. */
+    function parallasse() {
+      var scorri = schermo.querySelector('.gio-scorri');
+      /* Il parallasse muove la cornice; la lenta deriva della foto resta
+         all'animazione CSS dentro, così le due non si sovrascrivono. */
+      var foto = schermo.querySelector('.gio-sfondo');
+      var numero = schermo.querySelector('.gio-numero');
+      var nome = schermo.querySelector('.gio-nome');
+      var apice = schermo.querySelector('.gio-apice');
+      if (!scorri || lento) return;
+      var atteso = false;
+      scorri.addEventListener('scroll', function () {
+        if (atteso) return;
+        atteso = true;
+        requestAnimationFrame(function () {
+          atteso = false;
+          var y = scorri.scrollTop, h = apice.offsetHeight || 1;
+          var q = Math.min(1, y / h);
+          /* La foto sale più piano di tutto il resto e si ferma quando il
+             foglio l'ha coperta: oltre non servirebbe, e scoprirebbe il fondo. */
+          foto.style.transform = 'translate3d(0,' + (-Math.min(y, h) * 0.3) + 'px,0)';
+          if (numero) numero.style.transform = 'translate3d(0,' + (-y * 0.42) + 'px,0)';
+          if (nome) nome.style.transform = 'translate3d(0,' + (-y * 0.16) + 'px,0)';
+          apice.style.opacity = String(Math.max(0, 1 - q * 1.25));
+          /* passata la foto i comandi cambiano fondo: sull'avorio del foglio
+             il bianco su bianco sparirebbe */
+          schermo.classList.toggle('sceso', q > 0.55);
+        });
+      }, { passive: true });
+    }
+
+    function chiudi() {
+      if (!schermo) return;
+      var vecchio = schermo;
+      schermo = null;
+      quale = -1;
+      vecchio.classList.remove('aperto');
+      document.documentElement.style.overflow = '';
+      window.setTimeout(function () {
+        if (vecchio.parentNode) vecchio.parentNode.removeChild(vecchio);
+      }, lento ? 0 : 320);
+    }
+
+    function apri(i) {
+      var g = ROSA[i];
+      if (!g) return;
+      filo++;
+      var mio = filo;
+      quale = i;
+      if (!schermo) {
+        schermo = document.createElement('div');
+        schermo.className = 'gio-schermo';
+        schermo.setAttribute('role', 'dialog');
+        schermo.setAttribute('aria-modal', 'true');
+        document.body.appendChild(schermo);
+        document.documentElement.style.overflow = 'hidden';
+      }
+      schermo.setAttribute('aria-label', 'Scheda di ' + g.nome);
+      schermo.innerHTML = telaio(g);
+      schermo.querySelector('.gio-chiudi').addEventListener('click', chiudi);
+      var prec = schermo.querySelector('.gio-passo.prec');
+      var succ = schermo.querySelector('.gio-passo.succ');
+      if (prec) prec.addEventListener('click', function () { apri((i - 1 + ROSA.length) % ROSA.length); });
+      if (succ) succ.addEventListener('click', function () { apri((i + 1) % ROSA.length); });
+      parallasse();
+      carriera(g, mio);
+      requestAnimationFrame(function () {
+        if (schermo) schermo.classList.add('aperto');
+      });
+      var s = schermo.querySelector('.gio-scorri');
+      if (s) s.focus();
+    }
+
+    /* Trascinare il carosello non deve aprire nessuna scheda. */
+    var partenza = 0, mosso = false;
+    pista.addEventListener('pointerdown', function (e) { partenza = e.clientX; mosso = false; });
+    pista.addEventListener('pointermove', function (e) {
+      if (Math.abs(e.clientX - partenza) > 6) mosso = true;
+    });
+    $$('.volto[data-scheda]', pista).forEach(function (b) {
+      b.addEventListener('click', function (e) {
+        if (mosso) { e.preventDefault(); return; }
+        apri(+b.getAttribute('data-scheda'));
+      });
+    });
+    document.addEventListener('keydown', function (e) {
+      if (!schermo) return;
+      if (e.key === 'Escape') { chiudi(); return; }
+      if (e.key === 'ArrowLeft') apri((quale - 1 + ROSA.length) % ROSA.length);
+      if (e.key === 'ArrowRight') apri((quale + 1) % ROSA.length);
+    });
+  })();
 })();
