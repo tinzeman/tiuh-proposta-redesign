@@ -508,12 +508,13 @@
           b.className = 'rosa-stat';
           b.innerHTML = pezzi.join(' · ');
           v.appendChild(b);
-          if (!v.getAttribute('data-ruolo') && RUOLI[r.ruolo]) {
-            v.setAttribute('data-ruolo', r.ruolo);
+          var pri = (r.ruolo || '').split('/').filter(function (x) { return RUOLI[x]; });
+          if (!v.getAttribute('data-ruolo') && pri.length) {
+            v.setAttribute('data-ruolo', pri[0]);
             var sp = document.createElement('span');
             sp.className = 'ruolo';
-            sp.title = RUOLI[r.ruolo];
-            sp.textContent = r.ruolo;
+            sp.title = pri.map(function (x) { return RUOLI[x]; }).join(' e ');
+            sp.textContent = pri.join('/');
             v.insertBefore(sp, b);
           }
         });
@@ -537,7 +538,10 @@
       collega(righe);
       var conN = righe.some(function (r) { return r.n; });
       var conAnno = righe.some(function (r) { return r.anno; });
-      var conRuolo = righe.some(function (r) { return RUOLI[r.ruolo]; });
+      function pastiglie(r) {
+        return (r.ruolo || '').split('/').filter(function (x) { return RUOLI[x]; });
+      }
+      var conRuolo = righe.some(function (r) { return pastiglie(r).length; });
       var conPres = righe.some(function (r) { return r.pres; });
       var conPen = righe.some(function (r) { return r.m; });
       var corpo = righe.map(function (r, i) {
@@ -546,9 +550,9 @@
           '<td class="chi">' + r.nome +
             (r.da ? ' <span class="stat-da" title="In rosa con ' + r.da + '">' +
               r.da + '</span>' : '') + '</td>' +
-          (conRuolo ? '<td class="ruolo">' + (RUOLI[r.ruolo]
-            ? '<span class="' + r.ruolo + '" title="' + RUOLI[r.ruolo] + '">' + r.ruolo + '</span>'
-            : '') + '</td>' : '') +
+          (conRuolo ? '<td class="ruolo">' + pastiglie(r).map(function (x) {
+            return '<span class="' + x + '" title="' + RUOLI[x] + '">' + x + '</span>';
+          }).join('') + '</td>' : '') +
           (conAnno ? '<td class="anno">' + (r.anno || '') + '</td>' : '') +
           (conPres ? '<td class="pres">' + (r.pres || '') + '</td>' : '') +
           '<td>' + r.g + '</td><td>' + r.a + '</td>' +
