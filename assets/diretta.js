@@ -241,6 +241,113 @@
   }
 
   /* ── disegno ── */
+  /* Da chiusa la barra fa scorrere le partite in corso, una dopo l'altra:
+     con più campi aperti insieme, una sola striscia ferma nasconderebbe tutto
+     il resto. Si ferma appena ci passi sopra, e toccandola si apre proprio
+     quella che stai guardando. */
+  var RUOTA = 4800;
+  var giostra = null, fermo = false, reso = -1;
+  var lenta = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function barraDentro(p) {
+    var stato = p.finita ? 'Finita' : (p.tempo + '° tempo');
+    var pz = p.punti.split(':');
+    /* Niente pallino né etichetta: nella striscia contano la categoria,
+       le squadre e il punteggio. Che sia una simulazione lo dice il
+       pannello, appena si apre. */
+    /* Ordine nel documento: casa, punti casa, due punti, punti ospite,
+       ospite. Da largo si legge in fila; da stretto la griglia lo ricompone
+       in tabellone, una squadra per riga. */
+    return '<span class="dir-squadre">' +
+        '<u>' + etichetta(p) + '</u>' +
+        '<span class="dir-nome casa">' + p.casa + '</span>' +
+        '<b class="pt casa' + (+pz[0] > +pz[1] ? ' avanti' : '') + '">' + pz[0] + '</b>' +
+        '<span class="dir-sep">:</span>' +
+        '<b class="pt osp' + (+pz[1] > +pz[0] ? ' avanti' : '') + '">' + pz[1] + '</b>' +
+        '<span class="dir-nome osp">' + p.ospite + '</span></span>' +
+      /* Resta solo quante partite stanno girando: il tempo di gioco e
+         il resto sono nel pannello, a un tocco di distanza. */
+      (partite.length > 1
+        ? '<span class="dir-stato">' + partite.length + ' partite</span>' : '');
+  }
+
+  /* Ridisegna solo la striscia: rifare tutto il pannello a ogni giro
+     sprecherebbe lavoro e farebbe saltare la lettura della cronaca. */
+  var GIRO = 460;
+
+  function sincronizza() {
+    [].forEach.call(radice.querySelectorAll('.dir-piastra'), function (b) {
+      b.setAttribute('aria-selected', String(+b.getAttribute('data-i') === scelta));
+    });
+    var seguo = radice.querySelector('.dir-pannello-titolo em');
+    if (seguo) {
+      seguo.textContent = 'segui: ' + etichetta(partite[scelta]) + ' · ' + partite[scelta].punti;
+    }
+  }
+
+  function scriviBarra(barra) {
+    var faccia = barra.querySelector('.dir-faccia');
+    if (faccia) faccia.innerHTML = barraDentro(partite[scelta]);
+    sincronizza();
+  }
+
+  /* Il rullo. La faccia nuova viene appesa sotto quella vecchia e il nastro
+     sale di una faccia esatta: le due si muovono insieme, senza che la
+     striscia resti mai vuota. L'altezza è misurata perché su telefono la
+     barra va a capo e la faccia è più alta. */
+  function aggiornaBarra() {
+    var barra = radice && radice.querySelector('.dir-barra');
+    if (!barra || !partite[scelta]) return;
+    var nastro = barra.querySelector('.dir-nastro');
+    var rullo = barra.querySelector('.dir-rullo');
+    var vecchia = nastro && nastro.firstElementChild;
+    if (lenta || !nastro || !vecchia || nastro.children.length > 1) {
+      scriviBarra(barra);
+      return;
+    }
+    var alta = vecchia.offsetHeight;
+    var nuova = document.createElement('span');
+    nuova.className = 'dir-faccia';
+    nuova.innerHTML = barraDentro(partite[scelta]);
+    nastro.appendChild(nuova);
+    /* su telefono i nomi vanno a capo: la faccia nuova può essere più alta,
+       quindi anche la finestra scorre da un'altezza all'altra. */
+    var arrivo = nuova.offsetHeight || alta;
+    rullo.style.height = alta + 'px';
+    void nastro.offsetHeight;                       // fissa il punto di partenza
+    var molla = 'cubic-bezier(.22,.9,.24,1)';
+    rullo.style.transition = 'height ' + GIRO + 'ms ' + molla;
+    rullo.style.height = arrivo + 'px';
+    nastro.style.transition = 'transform ' + GIRO + 'ms ' + molla;
+    nastro.style.transform = 'translateY(-' + alta + 'px)';
+    setTimeout(function () {
+      if (!nastro.parentNode) return;
+      nastro.style.transition = '';
+      nastro.style.transform = '';
+      if (vecchia.parentNode === nastro) nastro.removeChild(vecchia);
+      rullo.style.transition = '';
+      rullo.style.height = '';
+    }, GIRO + 20);
+    sincronizza();
+  }
+
+  function giraLaGiostra() {
+    var deve = !statoAperto && !fermo && partite.length > 1;
+    if (!deve) {
+      if (giostra) { clearInterval(giostra); giostra = null; }
+      return;
+    }
+    /* Il pannello si ridisegna a ogni aggiornamento dei punteggi: se qui
+       ricreassimo il timer, ripartirebbe da zero ogni volta e non
+       scatterebbe mai. Se gira già, lo si lascia girare. */
+    if (giostra) return;
+    giostra = setInterval(function () {
+      if (document.hidden || statoAperto || fermo) return;
+      scelta = (scelta + 1) % partite.length;
+      aggiornaBarra();
+    }, RUOTA);
+  }
+
   function disegna() {
     if (!radice || !partite.length) return;
     if (scelta >= partite.length) scelta = 0;
@@ -304,24 +411,18 @@
 
     radice.innerHTML =
       '<button class="dir-barra" type="button" aria-expanded="' + statoAperto + '" aria-controls="dir-pannello">' +
-        '<span class="dir-punto"' + (p.finita ? ' data-finita="1"' : '') +
-          (demo ? ' data-demo="1"' : '') + '></span>' +
-        '<span class="dir-eti">' +
-          (demo ? 'Simulazione' : (p.finita ? 'Finita' : 'In diretta')) + '</span>' +
-        '<span class="dir-squadre">' +
-          '<u>' + etichetta(p) + '</u> ' +
-          p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
-        '<span class="dir-stato">' +
-          (partite.length > 1 ? partite.length + ' partite · ' : '') + stato + '</span>' +
+        '<span class="dir-rullo"><span class="dir-nastro">' +
+          '<span class="dir-faccia">' + barraDentro(p) + '</span>' +
+        '</span></span>' +
         '<span class="dir-freccia" aria-hidden="true"></span>' +
       '</button>' +
       '<div class="dir-schermo" id="dir-pannello" role="dialog" aria-modal="true" ' +
            'aria-label="Partita in corso"' + (statoAperto ? '' : ' hidden') + '>' +
         '<div class="dir-testa">' +
           '<span class="dir-punto"' + (p.finita ? ' data-finita="1"' : '') +
-            (demo ? ' data-demo="1"' : '') + '></span>' +
+            '></span>' +
           '<span class="dir-eti">' +
-            (demo ? 'Simulazione' : (p.finita ? 'Partita finita' : 'In diretta')) + '</span>' +
+            (p.finita ? 'Partita finita' : 'In diretta') + '</span>' +
           '<span class="dir-squadre">' +
             '<u>' + etichetta(p) + '</u> ' +
             p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
@@ -355,10 +456,7 @@
             (p.eventi.length ? p.eventi.length + ' episodi · dal più recente' : 'Cronaca') +
           '</p>' +
           '<ul class="dir-eventi">' + eventi + '</ul>' +
-          (demo ? '<p class="dir-nota">Simulazione su partite vere in calendario ' +
-                  '(13 settembre): squadre, categorie e palestre sono reali, i punteggi ' +
-                  'generati. Dal vivo qui compaiono anche i marcatori.</p>'
-                : '<p class="dir-nota">Dati da swiss unihockey, aggiornati circa ogni minuto.</p>') +
+          '<p class="dir-nota">Dati da swiss unihockey, aggiornati circa ogni minuto.</p>' +
         '</div>' +
       '</div>';
 
@@ -378,7 +476,16 @@
       elencoAperto = !elencoAperto;
       disegna();
     });
-    radice.querySelector('.dir-barra').addEventListener('click', function () { apri(!statoAperto); });
+    var barra = radice.querySelector('.dir-barra');
+    barra.addEventListener('click', function () { apri(!statoAperto); });
+    /* pointerdown: sul telefono il dito arriva prima del clic — così si apre
+       la partita che si sta guardando, non quella che è appena subentrata. */
+    ['mouseenter', 'focus', 'pointerdown'].forEach(function (e) {
+      barra.addEventListener(e, function () { fermo = true; giraLaGiostra(); }, true);
+    });
+    ['mouseleave', 'blur', 'pointerup', 'pointercancel'].forEach(function (e) {
+      barra.addEventListener(e, function () { fermo = false; giraLaGiostra(); }, true);
+    });
     var chiudi = radice.querySelector('.dir-chiudi');
     if (chiudi) chiudi.addEventListener('click', function () { apri(false); });
     var schermo = radice.querySelector('.dir-schermo');
@@ -386,6 +493,8 @@
       if (e.target === schermo) apri(false);      // clic sullo spazio vuoto
     });
     applicaApertura();
+    reso = scelta;
+    giraLaGiostra();
     var vivo = radice.querySelector('.dir-annuncio');
     if (vivo) vivo.textContent = 'Punteggio ' + nostri + ' a ' + loro + ', ' + stato;
   }
@@ -404,7 +513,11 @@
   function apri(v) {
     statoAperto = v;
     ricorda(v ? 'aperto' : 'chiuso');
-    applicaApertura();
+    /* La giostra può aver cambiato partita dopo l'ultimo disegno completo:
+       si apre quella che si sta guardando, non quella di prima. */
+    if (v && reso !== scelta) disegna();
+    else applicaApertura();
+    giraLaGiostra();
     if (!v) {
       var b = radice.querySelector('.dir-barra');
       if (b) b.focus();
