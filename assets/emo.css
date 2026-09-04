@@ -409,20 +409,20 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 @keyframes dirEntra{0%,100%{box-shadow:0 -8px 30px rgba(0,0,0,.28)}
   40%{box-shadow:0 -8px 30px rgba(0,0,0,.28), 0 0 0 4px rgba(217,30,20,.42)}}
 #diretta[data-visibile="true"] .dir-barra{transform:none}
-.dir-barra{display:flex; align-items:center; gap:14px; width:100%; border:0; cursor:pointer;
-  font-family:inherit; text-align:left; padding:13px max(20px,calc(50vw - var(--wrap)/2));
-  background:var(--red); color:#fff; box-shadow:0 -8px 30px rgba(0,0,0,.28)}
+.dir-barra{display:flex; align-items:center; gap:16px; width:100%; border:0; cursor:pointer;
+  font-family:inherit; text-align:left; padding:20px max(20px,calc(50vw - var(--wrap)/2));
+  background:var(--red); color:#fff; box-shadow:0 -10px 34px rgba(0,0,0,.3)}
 .dir-barra:hover{background:var(--red-ink)}
-.dir-punto{width:9px; height:9px; border-radius:50%; background:#fff; flex:none;
+.dir-punto{width:10px; height:10px; border-radius:50%; background:#fff; flex:none;
   box-shadow:0 0 0 0 rgba(255,255,255,.65); animation:dirPulsa 2s infinite}
 .dir-punto[data-finita]{animation:none; background:rgba(255,255,255,.6)}
-.dir-punto[data-demo]{animation:none; background:#F0C35A}
+.dir-punto[data-demo]{animation:none; background:#FFE08A}
 @keyframes dirPulsa{70%{box-shadow:0 0 0 9px rgba(255,255,255,0)} 100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
-.dir-eti{font-size:.7rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; flex:none}
-.dir-squadre{font-size:.98rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.dir-squadre b{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.2rem;
-  letter-spacing:0; font-variant-numeric:tabular-nums; margin:0 9px}
-.dir-stato{margin-left:auto; font-size:.84rem; opacity:.9; flex:none}
+.dir-eti{font-size:.74rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; flex:none}
+.dir-squadre{font-size:1.06rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dir-squadre b{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.4rem;
+  letter-spacing:0; font-variant-numeric:tabular-nums; margin:0 10px}
+.dir-stato{margin-left:auto; font-size:.88rem; opacity:.92; flex:none}
 .dir-freccia{width:11px; height:11px; border-right:2.5px solid #fff; border-top:2.5px solid #fff;
   transform:rotate(-45deg); flex:none; transition:transform .35s cubic-bezier(.16,1,.3,1)}
 #diretta[data-aperto="true"] .dir-freccia{transform:rotate(135deg)}
@@ -435,18 +435,18 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-schermo[hidden]{display:none}
 .dir-testa{display:flex; align-items:center; gap:12px; flex:none;
   padding:18px max(20px,calc(50vw - var(--wrap)/2));
-  background:var(--cream); border-bottom:1px solid var(--line)}
-.dir-testa .dir-eti{color:var(--red-ink); flex:none}
-.dir-testa .dir-squadre{flex:1; min-width:0; color:var(--ink)}
-.dir-testa .dir-squadre u{background:var(--navy); color:#fff}
-.dir-testa .dir-stato{margin-left:0; color:var(--ink-3); flex:none}
-.dir-chiudi{margin-left:auto; background:#fff; border:1px solid var(--line);
-  width:44px; height:44px; border-radius:50%; cursor:pointer; display:grid; place-items:center;
-  transition:.18s}
-.dir-chiudi:hover{background:var(--red); border-color:var(--red)}
-.dir-chiudi svg{width:22px; height:22px; fill:none; stroke:var(--ink); stroke-width:2.4;
+  background:var(--red); color:#fff; border-bottom:1px solid rgba(0,0,0,.12)}
+.dir-testa .dir-eti{color:#fff; flex:none}
+.dir-testa .dir-squadre{flex:1; min-width:0; color:#fff}
+.dir-testa .dir-squadre u{background:rgba(0,0,0,.26); color:#fff}
+.dir-testa .dir-stato{margin-left:0; color:rgba(255,255,255,.82); flex:none}
+.dir-chiudi{margin-left:auto; background:rgba(255,255,255,.16);
+  border:1px solid rgba(255,255,255,.5); width:44px; height:44px; border-radius:50%;
+  cursor:pointer; display:grid; place-items:center; transition:.18s}
+.dir-chiudi:hover{background:#fff; border-color:#fff}
+.dir-chiudi svg{width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2.4;
   stroke-linecap:round; stroke-linejoin:round}
-.dir-chiudi:hover svg{stroke:#fff}
+.dir-chiudi:hover svg{stroke:var(--red)}
 .dir-corpo{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column;
   padding:26px max(20px,calc(50vw - var(--wrap)/2)) 46px}
 /* i figli non devono restringersi: senza questo il tabellone viene schiacciato
