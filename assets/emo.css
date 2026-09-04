@@ -501,8 +501,13 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
   .dir-lato:first-child{order:1}
   .dir-tabellone b{order:2}
   .dir-lato:last-child{order:3}
-  /* nella fascia in alto restano etichetta e freccia: il resto è subito sotto */
-  .dir-testa .dir-squadre,.dir-testa .dir-stato{display:none}
+  /* nella fascia resta il punteggio, in forma compatta: scorrendo è l'unico
+     riferimento sempre visibile */
+  .dir-testa .dir-stato{display:none}
+  .dir-testa .dir-eti{display:none}
+  .dir-testa .dir-squadre{font-size:.86rem; white-space:nowrap; overflow:hidden;
+    text-overflow:ellipsis}
+  .dir-testa .dir-squadre b{font-size:1rem; margin:0 6px}
   .dir-testa{gap:10px}
   .dir-eventi li{grid-template-columns:54px 1fr; gap:4px 10px}
   .dir-eventi .chi{grid-column:2}
@@ -540,12 +545,10 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 
 
 /* ── tabellone da palazzetto ─────────────────────── */
-.dir-tab{background:#0B0A08; border-radius:18px; padding:30px 30px 26px; position:relative;
-  overflow:hidden; margin:22px 0 26px}
-.dir-tab::before{content:""; position:absolute; inset:0; pointer-events:none;
-  background:repeating-linear-gradient(0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px)}
+.dir-tab{background:var(--cream); border:1px solid var(--line); border-radius:18px;
+  padding:30px 30px 26px; position:relative; margin:22px 0 26px}
 .dir-tab-alto{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:24px;
-  font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:#8C8578; position:relative}
+  font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); position:relative}
 .dir-tab-alto .cat{background:var(--red); color:#fff; padding:5px 12px; border-radius:5px;
   letter-spacing:.12em; font-weight:800}
 .dir-tab-alto .sp{flex:1}
@@ -554,18 +557,18 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-tab-sq{display:flex; align-items:center; gap:18px; min-width:0}
 .dir-tab-sq.ospite{flex-direction:row-reverse; text-align:right}
 .dir-tab-sq b{font-family:'Archivo',sans-serif; font-size:clamp(1.1rem,2.2vw,1.6rem); font-weight:700;
-  letter-spacing:-.02em; display:block; line-height:1.1; color:#fff}
-.dir-tab-sq small{color:#8C8578; font-size:.76rem; letter-spacing:.12em; text-transform:uppercase}
-.dir-tab .dir-stemma{width:82px; height:82px; border-radius:14px}
+  letter-spacing:-.02em; display:block; line-height:1.1; color:var(--ink)}
+.dir-tab-sq small{color:var(--ink-3); font-size:.76rem; letter-spacing:.12em; text-transform:uppercase}
+.dir-tab .dir-stemma{width:82px; height:82px; border-radius:14px; background:#fff;
+  box-shadow:inset 0 0 0 1px rgba(20,17,13,.1)}
 /* il punteggio del tabellone: cifre tabellari, grandi, con i due punti smorzati */
 .dir-tab-corpo > b{display:flex; align-items:center; gap:.14em; font-family:'Archivo',sans-serif;
   font-weight:800; font-size:clamp(3.2rem,7.6vw,5.4rem); letter-spacing:.02em; line-height:1;
-  font-variant-numeric:tabular-nums; color:#fff}
-.dir-tab-corpo > b i{font-style:normal; color:#4A443A; font-size:.5em; font-weight:700}
+  font-variant-numeric:tabular-nums; color:var(--ink)}
+.dir-tab-corpo > b i{font-style:normal; color:var(--ink-3); opacity:.55; font-size:.5em; font-weight:700}
 
 /* ── pannello di tutte le partite, usato come selettore ── */
-.dir-pannello-partite{position:sticky; top:0; z-index:2; background:var(--ivory);
-  padding:0 0 20px; margin-bottom:4px; border-bottom:1px solid var(--line)}
+.dir-pannello-partite{padding:0 0 20px; margin-bottom:4px; border-bottom:1px solid var(--line)}
 .dir-pannello-titolo{display:flex; align-items:center; gap:10px; font-size:.72rem; letter-spacing:.18em;
   text-transform:uppercase; color:var(--ink-3); margin:0 0 14px}
 .dir-vivo{width:8px; height:8px; border-radius:50%; background:#1D9E75; flex:none}
@@ -602,27 +605,43 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 
 /* linea del tempo dentro il tabellone */
 .dir-linea{position:relative; margin:30px auto 4px; max-width:760px}
-.dir-linea .asse{position:relative; height:4px; background:rgba(255,255,255,.13); border-radius:99px}
+.dir-linea .asse{position:relative; height:4px; background:rgba(20,17,13,.14); border-radius:99px}
 .dir-linea .asse::before,.dir-linea .asse::after{content:""; position:absolute; top:-5px; bottom:-5px;
-  width:1px; background:rgba(255,255,255,.16)}
+  width:1px; background:rgba(20,17,13,.18)}
 .dir-linea .asse::before{left:33.333%} .dir-linea .asse::after{left:66.666%}
 .dir-linea .tacca{position:absolute; top:50%; width:13px; height:13px; border-radius:50%;
-  transform:translate(-50%,-50%); border:2.5px solid #0B0A08; cursor:default}
+  transform:translate(-50%,-50%); border:2.5px solid var(--cream); cursor:default}
 .dir-linea .tacca.noi{background:#1D9E75}
 .dir-linea .tacca.loro{background:var(--red)}
 .dir-linea .tacca.pen{background:#F0C35A; width:9px; height:9px; border-width:2px}
 .dir-linea .tempi{display:flex; justify-content:space-between; margin-top:11px; font-size:.68rem;
-  letter-spacing:.14em; text-transform:uppercase; color:#6E675C}
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3)}
 @media (max-width:820px){.dir-linea{margin-top:22px}}
 
 /* parziali per tempo, dal referto di gara */
 .dir-parziali{display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-top:24px;
   position:relative}
-.dir-parziali span{background:rgba(255,255,255,.06); border-radius:9px; padding:8px 14px;
+.dir-parziali span{background:#fff; border:1px solid var(--line); border-radius:9px; padding:8px 14px;
   display:grid; justify-items:center; gap:2px; min-width:74px}
 .dir-parziali i{font-style:normal; font-size:.6rem; letter-spacing:.13em; text-transform:uppercase;
-  color:#6E675C}
+  color:var(--ink-3)}
 .dir-parziali b{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.02rem;
-  font-variant-numeric:tabular-nums; color:#D8D2C6}
+  font-variant-numeric:tabular-nums; color:var(--ink)}
 .dir-parziali .extra{display:flex; align-items:center; font-size:.7rem; letter-spacing:.12em;
-  text-transform:uppercase; color:#8C8578; font-weight:700; min-width:0}
+  text-transform:uppercase; color:var(--ink-3); font-weight:700; min-width:0}
+
+/* l'elenco delle partite si richiude: scelta la partita, il tabellone ha spazio */
+.dir-pannello-titolo{display:flex; align-items:center; gap:10px; width:100%; border:0;
+  background:none; font-family:inherit; cursor:pointer; padding:10px 0; text-align:left;
+  font-size:.72rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-3)}
+.dir-pannello-titolo:hover{color:var(--ink)}
+.dir-pannello-titolo .sp{flex:1}
+.dir-pannello-titolo em{font-style:normal; letter-spacing:.06em; text-transform:none;
+  font-size:.86rem; color:var(--ink); font-weight:600}
+.dir-freccetta{width:10px; height:10px; border-right:2.2px solid currentColor;
+  border-bottom:2.2px solid currentColor; transform:rotate(45deg) translateY(-2px);
+  transition:transform .3s cubic-bezier(.16,1,.3,1); flex:none}
+.dir-pannello-partite[data-aperto="true"] .dir-freccetta{transform:rotate(225deg) translateY(-2px)}
+.dir-pannello-partite[data-aperto="false"]{padding-bottom:8px}
+.dir-piastre[hidden]{display:none}

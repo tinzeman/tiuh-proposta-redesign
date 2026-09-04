@@ -28,7 +28,7 @@
   var demo = false, demoAvviata = false, demoFerma = false;
   var radice = null, statoAperto = false, tempoDemo = 0;
   var partite = [], scelta = 0;   // più squadre del club possono giocare insieme
-  var giaMostrata = false;
+  var giaMostrata = false, elencoAperto = true;
 
   /* La prima volta che si trova una partita in corso il pannello si apre da solo:
      deve saltare all'occhio. Poi resta come l'ha lasciato chi guarda, anche
@@ -245,6 +245,10 @@
     if (!radice || !partite.length) return;
     if (scelta >= partite.length) scelta = 0;
     var p = partite[scelta];
+    /* Il ridisegno sostituisce tutto il contenuto: senza conservare la
+       posizione, a ogni aggiornamento la lettura tornerebbe in cima. */
+    var prima = radice.querySelector('.dir-corpo');
+    var scorrimento = prima ? prima.scrollTop : 0;
     var noi = p.ospite.indexOf('Ticino Unihockey') === 0 ? 'ospite' : 'casa';
     var pz = p.punti.split(':');
     var nostri = noi === 'casa' ? pz[0] : pz[1];
@@ -253,10 +257,18 @@
 
     var selettore = '';
     if (partite.length > 1) {
-      selettore = '<div class="dir-pannello-partite">' +
-        '<p class="dir-pannello-titolo"><span class="dir-vivo"></span>' + partite.length +
-          ' partite in corso</p>' +
-        '<div class="dir-piastre" role="tablist" aria-label="Partita da seguire">' +
+      var scelto = partite[scelta];
+      selettore = '<div class="dir-pannello-partite" data-aperto="' + elencoAperto + '">' +
+        '<button type="button" class="dir-pannello-titolo" aria-expanded="' + elencoAperto + '" ' +
+          'aria-controls="dir-piastre">' +
+          '<span class="dir-vivo"></span>' +
+          '<span>' + partite.length + ' partite in corso</span>' +
+          (elencoAperto ? '' : '<em>segui: ' + etichetta(scelto) + ' · ' + scelto.punti + '</em>') +
+          '<span class="sp"></span>' +
+          '<span class="dir-freccetta" aria-hidden="true"></span>' +
+        '</button>' +
+        '<div class="dir-piastre" id="dir-piastre" role="tablist" aria-label="Partita da seguire"' +
+          (elencoAperto ? '' : ' hidden') + '>' +
         partite.map(function (q, i) {
           var pz = q.punti.split(':');
           var u = q.eventi[0];
@@ -348,12 +360,20 @@
       '</div>';
 
     radice.setAttribute('data-visibile', 'true');
+    var dopo = radice.querySelector('.dir-corpo');
+    if (dopo && scorrimento) dopo.scrollTop = scorrimento;
     [].forEach.call(radice.querySelectorAll('.dir-piastra'), function (b) {
       b.addEventListener('click', function () {
         scelta = +b.getAttribute('data-i');
         statoAperto = true;
+        elencoAperto = false;          // scelta fatta: spazio al tabellone
         disegna();
       });
+    });
+    var titolo = radice.querySelector('.dir-pannello-titolo');
+    if (titolo) titolo.addEventListener('click', function () {
+      elencoAperto = !elencoAperto;
+      disegna();
     });
     radice.querySelector('.dir-barra').addEventListener('click', function () { apri(!statoAperto); });
     var chiudi = radice.querySelector('.dir-chiudi');
