@@ -289,222 +289,302 @@
   })();
 
   /* ── statistiche dei giocatori ──────────────────────────
-     Gol e assist si ricavano dalla cronaca di ogni partita giocata.
-     Le partite già lette restano in memoria nel browser: a ogni visita si
-     scaricano solo quelle nuove, così la tabella si aggiorna da sola dopo
-     ogni giornata invece che a fine stagione. */
+     La federazione pubblica direttamente la rosa con numero, ruolo, anno di
+     nascita, gol, assist, punti e minuti di penalità: una sola richiesta per
+     squadra, dati ufficiali, aggiornati dopo ogni giornata. */
   (function statistiche() {
     var box = document.getElementById('statistiche');
     if (!box) return;
     var API = 'https://api-v2.swissunihockey.ch/api';
-    var CLUB = 435553, STAGIONE = 2026;
-    var competizione = box.getAttribute('data-competizione') || '';
+    var STAGIONE = 2026;
+    var squadra = box.getAttribute('data-squadra');
+    if (!squadra) { box.innerHTML = ''; return; }
 
-    function ricorda(chiave, valore) {
-      try { localStorage.setItem(chiave, JSON.stringify(valore)); } catch (e) {}
-    }
-    function ricordato(chiave) {
-      try {
-        var v = localStorage.getItem(chiave);
-        return v ? JSON.parse(v) : null;
-      } catch (e) { return null; }
-    }
+    var RUOLI = { 'Torhüter': ['P', 'portiere'], 'Verteidiger': ['D', 'difensore'],
+                  'Stürmer': ['A', 'attaccante'] };
+
     function chiedi(u) {
       return fetch(u, { mode: 'cors' }).then(function (r) {
         if (!r.ok) throw new Error(r.status);
         return r.json();
       });
     }
-    function celle(row) {
-      return (row.cells || []).map(function (c) {
-        var t = c.text;
-        return Object.prototype.toString.call(t) === '[object Array]' ? t.join(' ')
-          : (t ? String(t) : '');
-      });
-    }
-
-    /* Dalla cronaca: gol, assist, minuti di penalità e «migliore in campo».
-       I tiri non vengono registrati dalla federazione, quindi una percentuale
-       di parate dei portieri non è ricavabile da questi dati. */
-    function estrai(json) {
+    function leggi(json) {
       var out = [];
       (((json || {}).data || {}).regions || []).forEach(function (reg) {
         (reg.rows || []).forEach(function (row) {
-          var c = celle(row);
-          if (c.length < 4) return;
-          if (c[2].indexOf('Ticino Unihockey') !== 0) return;
-          var chi = (c[3] || '').trim();
-          if (!chi) return;
-
-          if (c[1].indexOf('Torschütze') === 0) {
-            var m = /^(.+?)\s*\((.+)\)\s*$/.exec(chi);
-            out.push({ tipo: 'gol', chi: (m ? m[1] : chi).trim(),
-                       assist: m ? m[2].trim() : '' });
-            return;
-          }
-          var pen = /^(\d+)'(?:\+(\d+)')?-Strafe/.exec(c[1]);
-          if (pen) {
-            out.push({ tipo: 'pen', chi: chi,
-                       minuti: (+pen[1]) + (pen[2] ? +pen[2] : 0) });
-            return;
-          }
-          if (c[1].indexOf('Bester Spieler') === 0) {
-            out.push({ tipo: 'migliore', chi: chi });
-          }
-        });
-      });
-      return out;
-    }
-
-    function partiteDella(json, stagione) {
-      var out = [];
-      (((json || {}).data || {}).regions || []).forEach(function (reg) {
-        (reg.rows || []).forEach(function (row) {
-          var c = celle(row);
-          if (!c.length || c[0].indexOf('.') < 0) return;
-          if (competizione && c[2].indexOf(competizione) !== 0) return;
-          if (!c[5] || c[5].indexOf(':') < 0) return;       // non ancora giocata
-          var ids = (row.link || {}).ids || [];
-          if (ids.length) out.push(ids[0]);
-        });
-      });
-      return out;
-    }
-
-    function insieme(elenco, quanti, lavoro) {
-      var i = 0, esiti = [];
-      function prossimo() {
-        if (i >= elenco.length) return Promise.resolve();
-        var mio = i++;
-        return lavoro(elenco[mio]).then(function (r) {
-          esiti[mio] = r;
-          return prossimo();
-        });
-      }
-      var fili = [];
-      for (var k = 0; k < Math.min(quanti, elenco.length); k++) fili.push(prossimo());
-      return Promise.all(fili).then(function () { return esiti; });
-    }
-
-    function disegna(dati, partite, stagione) {
-      var gol = dati.gol, assist = dati.assist, pen = dati.pen, migliore = dati.migliore;
-      var nomi = {};
-      [gol, assist, pen, migliore].forEach(function (m) {
-        Object.keys(m).forEach(function (n) { nomi[n] = 1; });
-      });
-      var elenco = Object.keys(nomi).map(function (n) {
-        return { nome: n, g: gol[n] || 0, a: assist[n] || 0, m: pen[n] || 0,
-                 s: migliore[n] || 0, p: (gol[n] || 0) + (assist[n] || 0) };
-      }).sort(function (x, y) { return y.p - x.p || y.g - x.g || x.nome.localeCompare(y.nome); });
-
-      if (!elenco.length) {
-        box.innerHTML = '<p class="vuota">Le statistiche compariranno dopo le prime partite.</p>';
-        return;
-      }
-      var righe = elenco.map(function (r, i) {
-        return '<tr' + (i === 0 ? ' class="primo"' : '') + '><td>' + (i + 1) + '</td>' +
-          '<td>' + r.nome + '</td><td>' + r.g + '</td><td>' + r.a + '</td>' +
-          '<td class="punti">' + r.p + '</td>' +
-          '<td>' + (r.m || '') + '</td>' +
-          '<td>' + (r.s ? '★ ' + r.s : '') + '</td></tr>';
-      }).join('');
-      collega(elenco);
-      box.innerHTML =
-        '<p class="stato">' + (stagione === STAGIONE
-          ? 'Stagione 2026/27 · ' + partite + ' partite giocate'
-          : 'La stagione 2026/27 non è ancora cominciata — qui sotto la stagione 2025/26, ' +
-            partite + ' partite') + '</p>' +
-        '<table><thead><tr><th>#</th><th>Giocatore</th><th>Gol</th><th>Assist</th>' +
-        '<th>Punti</th><th title="Minuti di penalità">Pen.</th>' +
-        '<th title="Volte migliore in campo">Migliore</th></tr></thead><tbody>' +
-        righe + '</tbody></table>' +
-        '<p class="fonte">Dai referti di swiss unihockey · si aggiorna dopo ogni partita. ' +
-        'I tiri non vengono registrati, quindi non è possibile calcolare le parate dei portieri.</p>';
-    }
-
-    function conta(stagione) {
-      return chiedi(API + '/games?mode=club&club_id=' + CLUB + '&season=' + stagione +
-                    '&games_per_page=300')
-        .then(function (j) {
-          var ids = partiteDella(j, stagione);
-          if (!ids.length) return { vuoto: true, stagione: stagione };
-          var gol = {}, assist = {}, pen = {}, migliore = {};
-          return insieme(ids, 6, function (id) {
-            var chiave = 'tiuh-ev2-' + id;
-            var salvato = ricordato(chiave);
-            if (salvato) return Promise.resolve(salvato);
-            return chiedi(API + '/game_events/' + id).then(function (e) {
-              var v = estrai(e);
-              ricorda(chiave, v);
-              return v;
-            }).catch(function () { return []; });
-          }).then(function (esiti) {
-            esiti.forEach(function (lista) {
-              (lista || []).forEach(function (ev) {
-                if (ev.tipo === 'gol') {
-                  gol[ev.chi] = (gol[ev.chi] || 0) + 1;
-                  if (ev.assist) assist[ev.assist] = (assist[ev.assist] || 0) + 1;
-                } else if (ev.tipo === 'pen') {
-                  pen[ev.chi] = (pen[ev.chi] || 0) + ev.minuti;
-                } else if (ev.tipo === 'migliore') {
-                  migliore[ev.chi] = (migliore[ev.chi] || 0) + 1;
-                }
-              });
-            });
-            return { dati: { gol: gol, assist: assist, pen: pen, migliore: migliore },
-                     partite: ids.length, stagione: stagione };
+          var c = (row.cells || []).map(function (x) {
+            var t = x.text;
+            return Object.prototype.toString.call(t) === '[object Array]' ? t.join(' ')
+              : (t ? String(t) : '');
           });
+          if (c.length < 8) return;
+          out.push({ n: c[0] === '-' ? '' : c[0], ruolo: c[1], nome: c[2], anno: c[3],
+                     g: +c[4] || 0, a: +c[5] || 0, p: +c[6] || 0, m: +c[7] || 0 });
         });
+      });
+      return out;
     }
 
-    /* I nomi arrivano in due forme: la federazione scrive «M. Gervasoni»,
-       la rosa del club «Matteo Gervasoni» oppure, nelle giovanili, «Gervasoni
-       Matteo». Confrontiamo cognome e iniziale, in qualunque ordine stiano. */
     function semplice(t) {
       return (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
         .toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
     }
-    function combacia(nomeRosa, nomeStat) {
-      var st = semplice(nomeStat).split(' ');
-      if (st.length < 2) return false;
-      var iniziale = st[0][0];
-      var cognome = st.slice(1).join(' ');
-      var rosa = semplice(nomeRosa);
-      if (rosa.indexOf(cognome) < 0) return false;
-      return rosa.split(' ').some(function (t) {
-        return t[0] === iniziale && cognome.indexOf(t) < 0;
+    /* La rosa del club scrive «Gervasoni Matteo» o «Matteo Gervasoni»: bastano
+       le stesse parole, in qualsiasi ordine. */
+    function combacia(a, b) {
+      var x = semplice(a).split(' ').sort().join(' ');
+      var y = semplice(b).split(' ').sort().join(' ');
+      return x === y;
+    }
+    /* Le cronache abbreviano: «R. Bruni». La rosa scrive «Bruni Riccardo».
+       Il cognome deve esserci per intero, l'iniziale deve trovare il suo nome. */
+    function accostabile(corto, lungo) {
+      var a = semplice(corto).split(' '), b = semplice(lungo).split(' ');
+      var iniziali = [], parole = [], resto = b.slice();
+      a.forEach(function (t) { (t.length === 1 ? iniziali : parole).push(t); });
+      if (!iniziali.length || !parole.length) return false;
+      for (var i = 0; i < parole.length; i++) {
+        var k = resto.indexOf(parole[i]);
+        if (k < 0) return false;
+        resto.splice(k, 1);
+      }
+      for (var j = 0; j < iniziali.length; j++) {
+        var trovato = -1;
+        for (var h = 0; h < resto.length; h++) {
+          if (resto[h].charAt(0) === iniziali[j]) { trovato = h; break; }
+        }
+        if (trovato < 0) return false;
+        resto.splice(trovato, 1);
+      }
+      return true;
+    }
+    function somiglia(a, b) {
+      return combacia(a, b) || accostabile(a, b) || accostabile(b, a);
+    }
+
+    var ANAG = (function () {
+      var t = box.parentNode ? box.parentNode.querySelector('.anagrafica') : null;
+      try { return t ? JSON.parse(t.textContent) : []; } catch (e) { return []; }
+    })();
+    /* Chi ha segnato per questa squadra ma è tesserato altrove: nella cronaca
+       della lega compare abbreviato, qui gli ridiamo nome e provenienza. */
+    function ospiti(elenco) {
+      elenco.forEach(function (r) {
+        if (r.pieno) return;
+        var trovati = ANAG.filter(function (v) { return somiglia(r.nome, v[0]); });
+        if (trovati.length !== 1) return;
+        r.pieno = trovati[0][0];
+        r.da = trovati[0][1];
       });
     }
 
     function collega(elenco) {
       var voci = [].slice.call(document.querySelectorAll('.rosa-lista li'))
         .concat([].slice.call(document.querySelectorAll('.volto')));
-      var agganciati = 0;
-      voci.forEach(function (v) {
-        var et = v.querySelector('.nome') || v.querySelector('span:last-child');
-        if (!et) return;
-        var nome = et.textContent.trim();
-        var r = null;
+      var presi = [];
+      /* Prima gli abbinamenti certi, poi quelli per iniziale: e solo se
+         resta un candidato solo, altrimenti due omonimi si scambierebbero. */
+      function cerca(nome, largo) {
+        var esiti = [];
         for (var i = 0; i < elenco.length; i++) {
-          if (combacia(nome, elenco[i].nome)) { r = elenco[i]; break; }
+          if (presi.indexOf(i) >= 0) continue;
+          if (largo ? somiglia(nome, elenco[i].nome) : combacia(nome, elenco[i].nome)) esiti.push(i);
         }
-        if (!r || (!r.g && !r.a)) return;
-        agganciati++;
+        return esiti.length === 1 ? esiti[0] : -1;
+      }
+      [false, true].forEach(function (largo) {
+        voci.forEach(function (v) {
+          if (v.getAttribute('data-abbinato')) return;
+          var et = v.querySelector('.nome') || v.querySelector('span:not(.num):not(.ruolo):not(.anche)');
+          if (!et) return;
+          var k = cerca(et.textContent.trim(), largo);
+          if (k < 0) return;
+          presi.push(k);
+          v.setAttribute('data-abbinato', '1');
+          elenco[k].pieno = et.textContent.trim();
+          var rr = v.getAttribute('data-ruolo');
+          if (rr && !RUOLI[elenco[k].ruolo]) elenco[k].breve = rr;
+          segna(v, elenco[k]);
+        });
+      });
+    }
+    function segna(v, r) {
+      {
         var b = document.createElement('span');
         b.className = 'rosa-stat';
-        b.innerHTML = '<b>' + r.g + '</b> gol · <b>' + r.a + '</b> assist' +
-          (r.s ? ' · <i>★' + r.s + '</i>' : '');
+        var pezzi = [];
+        if (r.anno) pezzi.push('classe ' + r.anno);
+        if (r.g || r.a) pezzi.push('<b>' + r.g + '</b> gol · <b>' + r.a + '</b> assist');
+        if (!pezzi.length) return;
+        if (v.querySelector('.rosa-stat')) return;
+        b.innerHTML = pezzi.join(' · ');
         v.appendChild(b);
-      });
-      return agganciati;
+        if (!v.getAttribute('data-ruolo') && RUOLI[r.ruolo]) {
+          v.setAttribute('data-ruolo', RUOLI[r.ruolo][0]);
+          var sp = document.createElement('span');
+          sp.className = 'ruolo';
+          sp.title = RUOLI[r.ruolo][1];
+          sp.textContent = RUOLI[r.ruolo][0];
+          v.insertBefore(sp, b);
+        }
+      }
     }
 
-    box.innerHTML = '<p class="vuota">Calcolo in corso…</p>';
-    conta(STAGIONE).then(function (r) {
-      if (!r.vuoto) { disegna(r.dati, r.partite, r.stagione); return; }
-      return conta(STAGIONE - 1).then(function (v) {
-        if (v.vuoto) disegna({ gol: {}, assist: {}, pen: {}, migliore: {} }, 0, STAGIONE);
-        else disegna(v.dati, v.partite, v.stagione);
+    function disegna(elenco, stagione, fonte) {
+      if (!elenco.length) {
+        box.innerHTML = '<p class="vuota">La rosa con le statistiche non è ancora pubblicata.</p>';
+        return;
+      }
+      var ordinato = elenco.slice().sort(function (x, y) {
+        return y.p - x.p || y.g - x.g || x.nome.localeCompare(y.nome);
+      });
+      collega(ordinato);
+      ospiti(ordinato);
+      function breve(r) { return RUOLI[r.ruolo] ? RUOLI[r.ruolo] : (r.breve ? [r.breve, ''] : null); }
+      var conN = ordinato.some(function (r) { return r.n; });
+      var conAnno = ordinato.some(function (r) { return r.anno; });
+      var conRuolo = ordinato.some(function (r) { return breve(r); });
+      var conPen = ordinato.some(function (r) { return r.m; });
+      var righe = ordinato.map(function (r, i) {
+        var ru = breve(r);
+        return '<tr' + (i === 0 && r.p ? ' class="primo"' : '') + '>' +
+          (conN ? '<td class="num">' + (r.n || '·') + '</td>' : '') +
+          '<td class="chi">' + (r.pieno || r.nome) +
+            (r.da ? ' <span class="stat-da" title="In rosa con ' + r.da +
+              '">' + r.da + '</span>' : '') + '</td>' +
+          (conRuolo ? '<td class="ruolo">' + (ru ? '<span class="' + ru[0] + '"' +
+            (ru[1] ? ' title="' + ru[1] + '"' : '') + '>' + ru[0] + '</span>' : '') + '</td>' : '') +
+          (conAnno ? '<td>' + (r.anno || '') + '</td>' : '') +
+          '<td>' + r.g + '</td><td>' + r.a + '</td>' +
+          '<td class="punti">' + r.p + '</td>' +
+          (conPen ? '<td>' + (r.m || '') + '</td>' : '') + '</tr>';
+      }).join('');
+      box.innerHTML =
+        '<p class="stato">' + (stagione === STAGIONE ? 'Stagione 2026/27'
+          : 'La stagione 2026/27 non è ancora cominciata — qui sotto la stagione 2025/26') + '</p>' +
+        '<table><thead><tr>' + (conN ? '<th class="num">N.</th>' : '') + '<th class="chi">Giocatore</th>' +
+        (conRuolo ? '<th>Ruolo</th>' : '') + (conAnno ? '<th>Classe</th>' : '') +
+        '<th>Gol</th><th>Assist</th><th>Punti</th>' +
+        (conPen ? '<th title="Minuti di penalità">Pen.</th>' : '') +
+        '</tr></thead><tbody>' + righe + '</tbody></table>' +
+        '<p class="fonte">' + (fonte === 'calcolata'
+          ? 'Conteggio nostro, ricavato dalla cronaca ufficiale di ogni partita — swiss unihockey ' +
+            'pubblica la lista giocatori solo per le leghe nazionali. Si aggiorna dopo ogni giornata.'
+          : 'Lista giocatori ufficiale di swiss unihockey · si aggiorna dopo ogni giornata.') +
+        ' I tiri non vengono registrati, quindi le parate dei portieri non sono calcolabili.</p>';
+    }
+
+    function indirizzo(anno) {
+      return API + '/teams/' + squadra + '/players?season=' + anno;
+    }
+
+    /* La federazione pubblica la rosa ufficiale solo per le leghe nazionali.
+       Per le giovanili i numeri li ricaviamo noi dalla cronaca delle partite:
+       stesso risultato, verificato sulla prima squadra. */
+    var competizione = box.getAttribute('data-competizione') || '';
+    var CLUB = 435553;
+
+    function ricorda(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+    function ricordato(k) {
+      try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : null; } catch (e) { return null; }
+    }
+    function celle(row) {
+      return (row.cells || []).map(function (c) {
+        var t = c.text;
+        return Object.prototype.toString.call(t) === '[object Array]' ? t.join(' ') : (t ? String(t) : '');
+      });
+    }
+    function estrai(json) {
+      var out = [];
+      (((json || {}).data || {}).regions || []).forEach(function (reg) {
+        (reg.rows || []).forEach(function (row) {
+          var c = celle(row);
+          if (c.length < 4 || c[2].indexOf('Ticino Unihockey') !== 0) return;
+          var chi = (c[3] || '').trim();
+          if (!chi) return;
+          if (c[1].indexOf('Torschütze') === 0) {
+            var m = /^(.+?)\s*\((.+)\)\s*$/.exec(chi);
+            out.push({ t: 'g', chi: (m ? m[1] : chi).trim(), assist: m ? m[2].trim() : '' });
+          } else {
+            var pen = /^(\d+)'(?:\+(\d+)')?-Strafe/.exec(c[1]);
+            if (pen) out.push({ t: 'p', chi: chi, min: (+pen[1]) + (pen[2] ? +pen[2] : 0) });
+          }
+        });
+      });
+      return out;
+    }
+    function insieme(elenco, quanti, lavoro) {
+      var i = 0, esiti = [];
+      function passo() {
+        if (i >= elenco.length) return Promise.resolve();
+        var mio = i++;
+        return lavoro(elenco[mio]).then(function (r) { esiti[mio] = r; return passo(); });
+      }
+      var fili = [];
+      for (var k = 0; k < Math.min(quanti, elenco.length); k++) fili.push(passo());
+      return Promise.all(fili).then(function () { return esiti; });
+    }
+    function calcolate(anno) {
+      return chiedi(API + '/games?mode=club&club_id=' + CLUB + '&season=' + anno +
+                    '&games_per_page=300').then(function (j) {
+        var ids = [];
+        (((j.data || {}).regions) || []).forEach(function (reg) {
+          (reg.rows || []).forEach(function (row) {
+            var c = celle(row);
+            if (!c.length || c[0].indexOf('.') < 0) return;
+            if (competizione && c[2].indexOf(competizione) !== 0) return;
+            if (!c[5] || c[5].indexOf(':') < 0) return;
+            var link = (row.link || {}).ids || [];
+            if (link.length) ids.push(link[0]);
+          });
+        });
+        if (!ids.length) return [];
+        var g = {}, a = {}, m = {};
+        return insieme(ids, 6, function (id) {
+          var chiave = 'tiuh-ev3-' + id, salvato = ricordato(chiave);
+          if (salvato) return Promise.resolve(salvato);
+          return chiedi(API + '/game_events/' + id).then(function (e) {
+            var v = estrai(e); ricorda(chiave, v); return v;
+          }).catch(function () { return []; });
+        }).then(function (esiti) {
+          esiti.forEach(function (lista) {
+            (lista || []).forEach(function (ev) {
+              if (ev.t === 'g') {
+                g[ev.chi] = (g[ev.chi] || 0) + 1;
+                if (ev.assist) a[ev.assist] = (a[ev.assist] || 0) + 1;
+              } else { m[ev.chi] = (m[ev.chi] || 0) + ev.min; }
+            });
+          });
+          var nomi = {};
+          [g, a, m].forEach(function (o) { Object.keys(o).forEach(function (n) { nomi[n] = 1; }); });
+          return Object.keys(nomi).map(function (n) {
+            return { n: '', ruolo: '', nome: n, anno: '',
+                     g: g[n] || 0, a: a[n] || 0, p: (g[n] || 0) + (a[n] || 0), m: m[n] || 0 };
+          });
+        });
+      });
+    }
+    function ufficiale(anno) {
+      if (!squadra) return Promise.resolve([]);
+      return chiedi(indirizzo(anno)).then(leggi).catch(function () { return []; });
+    }
+    function conDati(e) { return e.some(function (r) { return r.p || r.g || r.a || r.m; }); }
+
+    function prova(anno) {
+      return ufficiale(anno).then(function (e) {
+        if (e.length && conDati(e)) return { e: e, anno: anno, fonte: 'ufficiale' };
+        return calcolate(anno).then(function (c) {
+          if (c.length) return { e: c, anno: anno, fonte: 'calcolata' };
+          return { e: e, anno: anno, fonte: 'ufficiale' };   // rosa senza numeri, meglio di nulla
+        }).catch(function () { return { e: e, anno: anno, fonte: 'ufficiale' }; });
+      });
+    }
+    prova(STAGIONE).then(function (r) {
+      if (r.e.length && conDati(r.e)) { disegna(r.e, r.anno, r.fonte); return; }
+      return prova(STAGIONE - 1).then(function (v) {
+        var pieno = v.e.length > 0;
+        disegna(pieno ? v.e : r.e, pieno ? STAGIONE - 1 : STAGIONE, pieno ? v.fonte : r.fonte);
       });
     }).catch(function () {
       box.innerHTML = '<p class="vuota">Statistiche non disponibili in questo momento.</p>';
