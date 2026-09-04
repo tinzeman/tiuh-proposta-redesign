@@ -199,11 +199,15 @@
     var lega = box.getAttribute('data-lega');
     var classe = box.getAttribute('data-classe');
     var gruppo = box.getAttribute('data-gruppo');
+    /* I gironi cambiano numero ogni stagione: per l'anno scorso serve il suo. */
+    var gruppoPrec = box.getAttribute('data-gruppo-prec') || '';
     var stagione = 2026;
 
     function indirizzo(anno) {
+      var g = (anno === stagione) ? gruppo : gruppoPrec;
+      if (!g) return null;
       return API + '?season=' + anno + '&league=' + lega + '&game_class=' + classe +
-        '&group=' + encodeURIComponent(gruppo);
+        '&group=' + encodeURIComponent(g);
     }
     function righeDi(j) {
       var out = [];
@@ -244,7 +248,8 @@
         '<p class="stato">' + titolo + '</p>' +
         '<table><thead><tr><th>Rg</th><th>Squadra</th><th>G</th><th>Reti</th>' +
         '<th>Diff</th><th>Punti</th></tr></thead><tbody>' + corpo + '</tbody></table>' +
-        '<p class="fonte">Fonte: swiss unihockey · ' + gruppo.replace('Gruppe', 'girone') + '</p>';
+        '<p class="fonte">Fonte: swiss unihockey · ' +
+          (anno === stagione ? gruppo : gruppoPrec).replace('Gruppe', 'girone') + '</p>';
     }
     function chiedi(u) {
       return fetch(u, { mode: 'cors' }).then(function (r) {
@@ -263,7 +268,9 @@
       /* Stagione non ancora cominciata. Si può mostrare quella conclusa, ma solo
          se il club c'era: i gironi cambiano ogni anno, e una tabella senza di noi
          non dice nulla. */
-      return chiedi(indirizzo(stagione - 1)).then(function (k) {
+      var prec = indirizzo(stagione - 1);
+      if (!prec) { disegna([], stagione, ''); return; }
+      return chiedi(prec).then(function (k) {
         var vecchie = righeDi(k);
         if (vecchie.length && ciSiamo(vecchie)) {
           disegna(vecchie, stagione - 1,
