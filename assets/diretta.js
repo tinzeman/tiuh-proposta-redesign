@@ -107,6 +107,13 @@
 
   /* Gli stemmi arrivano dal dettaglio partita; se mancano si mostra
      un tondo con l'iniziale, così l'impaginato non si sfalda. */
+  /* Il punteggio del tabellone si compone a pezzi: così i due numeri e i due
+     punti hanno spazi propri e restano leggibili anche a corpo grande. */
+  function tabellone(punti) {
+    var p = (punti || '0:0').split(':');
+    return '<b><span>' + p[0] + '</span><i>:</i><span>' + p[1] + '</span></b>';
+  }
+
   function stemma(url, nome) {
     if (url) {
       return '<span class="dir-stemma"><img src="' + url + '" alt="" loading="lazy"></span>';
@@ -199,7 +206,7 @@
         '<span class="dir-eti">' +
           (demo ? 'Simulazione' : (p.finita ? 'Finita' : 'In diretta')) + '</span>' +
         '<span class="dir-squadre">' +
-          (partite.length > 1 ? '<u>' + etichetta(p) + '</u> ' : '') +
+          '<u>' + etichetta(p) + '</u> ' +
           p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
         '<span class="dir-stato">' +
           (partite.length > 1 ? partite.length + ' partite · ' : '') + stato + '</span>' +
@@ -213,7 +220,7 @@
           '<span class="dir-eti">' +
             (demo ? 'Simulazione' : (p.finita ? 'Partita finita' : 'In diretta')) + '</span>' +
           '<span class="dir-squadre">' +
-            (partite.length > 1 ? '<u>' + etichetta(p) + '</u> ' : '') +
+            '<u>' + etichetta(p) + '</u> ' +
             p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
           '<span class="dir-stato">' +
             (partite.length > 1 ? partite.length + ' partite · ' : '') + stato + '</span>' +
@@ -226,7 +233,7 @@
           '<div class="dir-tabellone">' +
             '<span class="dir-lato">' + stemma(p.stemmaCasa, p.casa) +
               '<span class="dir-nome">' + p.casa + '</span></span>' +
-            '<b>' + p.punti + '</b>' +
+            tabellone(p.punti) +
             '<span class="dir-lato">' + stemma(p.stemmaOspite, p.ospite) +
               '<span class="dir-nome">' + p.ospite + '</span></span>' +
           '</div>' +

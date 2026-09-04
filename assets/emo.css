@@ -420,8 +420,8 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 @keyframes dirPulsa{70%{box-shadow:0 0 0 9px rgba(255,255,255,0)} 100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 .dir-eti{font-size:.7rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; flex:none}
 .dir-squadre{font-size:.98rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.dir-squadre b{font-family:'Archivo',sans-serif; font-weight:900; font-size:1.16rem;
-  letter-spacing:-.02em; margin:0 6px}
+.dir-squadre b{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.2rem;
+  letter-spacing:0; font-variant-numeric:tabular-nums; margin:0 9px}
 .dir-stato{margin-left:auto; font-size:.84rem; opacity:.9; flex:none}
 .dir-freccia{width:11px; height:11px; border-right:2.5px solid #fff; border-top:2.5px solid #fff;
   transform:rotate(-45deg); flex:none; transition:transform .35s cubic-bezier(.16,1,.3,1)}
@@ -450,8 +450,13 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
   padding:34px max(20px,calc(50vw - var(--wrap)/2)) 46px}
 .dir-tabellone{display:flex; align-items:center; justify-content:center; gap:26px; flex-wrap:wrap;
   padding-bottom:16px}
-.dir-tabellone b{font-family:'Archivo',sans-serif; font-size:clamp(3rem,9vw,6rem); font-weight:900;
-  letter-spacing:-.04em; line-height:1}
+/* Cifre tabellari, peso 800 e spaziatura aperta: a corpo grande il 900 con
+   crenatura negativa chiudeva i contorni e si leggeva male. */
+.dir-tabellone b{font-family:'Archivo',sans-serif; font-size:clamp(3rem,8.4vw,5.6rem);
+  font-weight:800; letter-spacing:0; line-height:1; font-variant-numeric:tabular-nums;
+  display:flex; align-items:baseline; gap:.06em}
+.dir-tabellone b i{font-style:normal; color:rgba(255,255,255,.45); font-weight:700;
+  margin:0 .04em; transform:translateY(-.04em)}
 .dir-nome{font-weight:600; font-size:clamp(1.05rem,2vw,1.5rem); color:rgba(255,255,255,.88); text-align:center}
 .dir-riga{text-align:center; color:rgba(255,255,255,.55); font-size:.92rem; margin-bottom:26px}
 .dir-eventi{list-style:none; display:grid; gap:3px; max-width:680px; margin:0 auto; width:100%}
@@ -480,10 +485,15 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
   .dir-stato{font-size:.78rem}
   .dir-corpo{padding:24px 18px 34px; justify-content:flex-start}
   .dir-testa{padding:14px 18px}
-  /* in verticale il tabellone si impila: nome, punteggio, nome */
-  .dir-tabellone{flex-direction:column; gap:4px; padding-bottom:12px}
+  /* In verticale: squadra di casa, punteggio, squadra ospite — in quest'ordine.
+     Il punteggio sta in mezzo, com'è su un tabellone vero. */
+  .dir-tabellone{flex-direction:column; gap:10px; padding-bottom:14px}
+  .dir-lato:first-child{order:1}
   .dir-tabellone b{order:2}
-  .dir-nome:last-of-type{order:3}
+  .dir-lato:last-child{order:3}
+  /* nella fascia in alto restano etichetta e freccia: il resto è subito sotto */
+  .dir-testa .dir-squadre,.dir-testa .dir-stato{display:none}
+  .dir-testa{gap:10px}
   .dir-eventi li{grid-template-columns:54px 1fr; gap:4px 10px}
   .dir-eventi .chi{grid-column:2}
   #diretta[data-visibile="true"] ~ * .etichetta,.etichetta{bottom:64px}
@@ -501,7 +511,8 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-scelta button:hover{border-color:rgba(255,255,255,.5)}
 .dir-scelta button[aria-selected="true"]{background:var(--red); border-color:var(--red)}
 .dir-scelta b{font-family:'Archivo',sans-serif; font-size:.82rem; letter-spacing:.02em}
-.dir-scelta span{font-family:'Archivo',sans-serif; font-weight:900; font-size:1.16rem; letter-spacing:-.03em}
+.dir-scelta span{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.2rem;
+  letter-spacing:0; font-variant-numeric:tabular-nums}
 .dir-scelta i{font-style:normal; font-size:.72rem; color:rgba(255,255,255,.58);
   max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .dir-scelta button[aria-selected="true"] i{color:rgba(255,255,255,.8)}
