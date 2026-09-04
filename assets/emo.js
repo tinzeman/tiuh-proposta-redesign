@@ -323,16 +323,34 @@
       });
     }
 
-    /* dalla cronaca di una partita: gol e assist dei nostri */
+    /* Dalla cronaca: gol, assist, minuti di penalità e «migliore in campo».
+       I tiri non vengono registrati dalla federazione, quindi una percentuale
+       di parate dei portieri non è ricavabile da questi dati. */
     function estrai(json) {
       var out = [];
       (((json || {}).data || {}).regions || []).forEach(function (reg) {
         (reg.rows || []).forEach(function (row) {
           var c = celle(row);
-          if (c.length < 4 || c[1].indexOf('Torschütze') !== 0) return;
+          if (c.length < 4) return;
           if (c[2].indexOf('Ticino Unihockey') !== 0) return;
-          var m = /^(.+?)\s*\((.+)\)\s*$/.exec((c[3] || '').trim());
-          out.push({ gol: (m ? m[1] : c[3]).trim(), assist: m ? m[2].trim() : '' });
+          var chi = (c[3] || '').trim();
+          if (!chi) return;
+
+          if (c[1].indexOf('Torschütze') === 0) {
+            var m = /^(.+?)\s*\((.+)\)\s*$/.exec(chi);
+            out.push({ tipo: 'gol', chi: (m ? m[1] : chi).trim(),
+                       assist: m ? m[2].trim() : '' });
+            return;
+          }
+          var pen = /^(\d+)'(?:\+(\d+)')?-Strafe/.exec(c[1]);
+          if (pen) {
+            out.push({ tipo: 'pen', chi: chi,
+                       minuti: (+pen[1]) + (pen[2] ? +pen[2] : 0) });
+            return;
+          }
+          if (c[1].indexOf('Bester Spieler') === 0) {
+            out.push({ tipo: 'migliore', chi: chi });
+          }
         });
       });
       return out;
@@ -368,12 +386,15 @@
       return Promise.all(fili).then(function () { return esiti; });
     }
 
-    function disegna(gol, assist, partite, stagione) {
+    function disegna(dati, partite, stagione) {
+      var gol = dati.gol, assist = dati.assist, pen = dati.pen, migliore = dati.migliore;
       var nomi = {};
-      Object.keys(gol).forEach(function (n) { nomi[n] = 1; });
-      Object.keys(assist).forEach(function (n) { nomi[n] = 1; });
+      [gol, assist, pen, migliore].forEach(function (m) {
+        Object.keys(m).forEach(function (n) { nomi[n] = 1; });
+      });
       var elenco = Object.keys(nomi).map(function (n) {
-        return { nome: n, g: gol[n] || 0, a: assist[n] || 0, p: (gol[n] || 0) + (assist[n] || 0) };
+        return { nome: n, g: gol[n] || 0, a: assist[n] || 0, m: pen[n] || 0,
+                 s: migliore[n] || 0, p: (gol[n] || 0) + (assist[n] || 0) };
       }).sort(function (x, y) { return y.p - x.p || y.g - x.g || x.nome.localeCompare(y.nome); });
 
       if (!elenco.length) {
@@ -383,16 +404,22 @@
       var righe = elenco.map(function (r, i) {
         return '<tr' + (i === 0 ? ' class="primo"' : '') + '><td>' + (i + 1) + '</td>' +
           '<td>' + r.nome + '</td><td>' + r.g + '</td><td>' + r.a + '</td>' +
-          '<td class="punti">' + r.p + '</td></tr>';
+          '<td class="punti">' + r.p + '</td>' +
+          '<td>' + (r.m || '') + '</td>' +
+          '<td>' + (r.s ? '★ ' + r.s : '') + '</td></tr>';
       }).join('');
+      collega(elenco);
       box.innerHTML =
         '<p class="stato">' + (stagione === STAGIONE
           ? 'Stagione 2026/27 · ' + partite + ' partite giocate'
           : 'La stagione 2026/27 non è ancora cominciata — qui sotto la stagione 2025/26, ' +
             partite + ' partite') + '</p>' +
         '<table><thead><tr><th>#</th><th>Giocatore</th><th>Gol</th><th>Assist</th>' +
-        '<th>Punti</th></tr></thead><tbody>' + righe + '</tbody></table>' +
-        '<p class="fonte">Dai referti di swiss unihockey · si aggiorna dopo ogni partita</p>';
+        '<th>Punti</th><th title="Minuti di penalità">Pen.</th>' +
+        '<th title="Volte migliore in campo">Migliore</th></tr></thead><tbody>' +
+        righe + '</tbody></table>' +
+        '<p class="fonte">Dai referti di swiss unihockey · si aggiorna dopo ogni partita. ' +
+        'I tiri non vengono registrati, quindi non è possibile calcolare le parate dei portieri.</p>';
     }
 
     function conta(stagione) {
@@ -401,9 +428,9 @@
         .then(function (j) {
           var ids = partiteDella(j, stagione);
           if (!ids.length) return { vuoto: true, stagione: stagione };
-          var gol = {}, assist = {};
+          var gol = {}, assist = {}, pen = {}, migliore = {};
           return insieme(ids, 6, function (id) {
-            var chiave = 'tiuh-gol-' + id;
+            var chiave = 'tiuh-ev2-' + id;
             var salvato = ricordato(chiave);
             if (salvato) return Promise.resolve(salvato);
             return chiedi(API + '/game_events/' + id).then(function (e) {
@@ -414,21 +441,70 @@
           }).then(function (esiti) {
             esiti.forEach(function (lista) {
               (lista || []).forEach(function (ev) {
-                if (ev.gol) gol[ev.gol] = (gol[ev.gol] || 0) + 1;
-                if (ev.assist) assist[ev.assist] = (assist[ev.assist] || 0) + 1;
+                if (ev.tipo === 'gol') {
+                  gol[ev.chi] = (gol[ev.chi] || 0) + 1;
+                  if (ev.assist) assist[ev.assist] = (assist[ev.assist] || 0) + 1;
+                } else if (ev.tipo === 'pen') {
+                  pen[ev.chi] = (pen[ev.chi] || 0) + ev.minuti;
+                } else if (ev.tipo === 'migliore') {
+                  migliore[ev.chi] = (migliore[ev.chi] || 0) + 1;
+                }
               });
             });
-            return { gol: gol, assist: assist, partite: ids.length, stagione: stagione };
+            return { dati: { gol: gol, assist: assist, pen: pen, migliore: migliore },
+                     partite: ids.length, stagione: stagione };
           });
         });
     }
 
+    /* I nomi arrivano in due forme: la federazione scrive «M. Gervasoni»,
+       la rosa del club «Matteo Gervasoni» oppure, nelle giovanili, «Gervasoni
+       Matteo». Confrontiamo cognome e iniziale, in qualunque ordine stiano. */
+    function semplice(t) {
+      return (t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase().replace(/[^a-z\s]/g, ' ').replace(/\s+/g, ' ').trim();
+    }
+    function combacia(nomeRosa, nomeStat) {
+      var st = semplice(nomeStat).split(' ');
+      if (st.length < 2) return false;
+      var iniziale = st[0][0];
+      var cognome = st.slice(1).join(' ');
+      var rosa = semplice(nomeRosa);
+      if (rosa.indexOf(cognome) < 0) return false;
+      return rosa.split(' ').some(function (t) {
+        return t[0] === iniziale && cognome.indexOf(t) < 0;
+      });
+    }
+
+    function collega(elenco) {
+      var voci = [].slice.call(document.querySelectorAll('.rosa-lista li'))
+        .concat([].slice.call(document.querySelectorAll('.volto')));
+      var agganciati = 0;
+      voci.forEach(function (v) {
+        var et = v.querySelector('.nome') || v.querySelector('span:last-child');
+        if (!et) return;
+        var nome = et.textContent.trim();
+        var r = null;
+        for (var i = 0; i < elenco.length; i++) {
+          if (combacia(nome, elenco[i].nome)) { r = elenco[i]; break; }
+        }
+        if (!r || (!r.g && !r.a)) return;
+        agganciati++;
+        var b = document.createElement('span');
+        b.className = 'rosa-stat';
+        b.innerHTML = '<b>' + r.g + '</b> gol · <b>' + r.a + '</b> assist' +
+          (r.s ? ' · <i>★' + r.s + '</i>' : '');
+        v.appendChild(b);
+      });
+      return agganciati;
+    }
+
     box.innerHTML = '<p class="vuota">Calcolo in corso…</p>';
     conta(STAGIONE).then(function (r) {
-      if (!r.vuoto) { disegna(r.gol, r.assist, r.partite, r.stagione); return; }
+      if (!r.vuoto) { disegna(r.dati, r.partite, r.stagione); return; }
       return conta(STAGIONE - 1).then(function (v) {
-        if (v.vuoto) disegna({}, {}, 0, STAGIONE);
-        else disegna(v.gol, v.assist, v.partite, v.stagione);
+        if (v.vuoto) disegna({ gol: {}, assist: {}, pen: {}, migliore: {} }, 0, STAGIONE);
+        else disegna(v.dati, v.partite, v.stagione);
       });
     }).catch(function () {
       box.innerHTML = '<p class="vuota">Statistiche non disponibili in questo momento.</p>';
