@@ -167,6 +167,14 @@
       '</div>';
   }
 
+  /* La federazione scrive «A. Tomatis (V. Heiska)»: marcatore e, fra parentesi,
+     chi ha servito l'assist. Li separiamo per darne conto distintamente. */
+  function marcatore(t) {
+    if (!t) return null;
+    var m = /^(.+?)\s*\((.+)\)\s*$/.exec(t);
+    return m ? { chi: m[1].trim(), assist: m[2].trim() } : { chi: t.trim(), assist: '' };
+  }
+
   function stemma(url, nome) {
     if (url) {
       return '<span class="dir-stemma"><img src="' + url + '" alt="" loading="lazy"></span>';
@@ -259,7 +267,7 @@
               stemma(q.stemmaCasa, q.casa) + '<span>' + q.casa + '</span><b>' + pz[0] + '</b></span>' +
             '<span class="riga' + (+pz[1] > +pz[0] ? ' vince' : '') + '">' +
               stemma(q.stemmaOspite, q.ospite) + '<span>' + q.ospite + '</span><b>' + pz[1] + '</b></span>' +
-            '<span class="piede">' + (q.finita ? 'finita' : q.tempo + '° tempo') +
+            '<span class="dir-coda">' + (q.finita ? 'finita' : q.tempo + '° tempo') +
               (u ? '<em>' + u.minuto + ' ' + (u.tipo === 'gol' ? 'gol' : 'penalità') + '</em>' : '') +
             '</span></button>';
         }).join('') + '</div></div>';
@@ -270,10 +278,16 @@
       /* Il colore della riga dice che cosa è successo, non solo a chi:
          verde gol nostro, rosso gol subito, ambra penalità. */
       var classe = e.tipo + (mio ? ' noi' : ' loro');
+      var p = marcatore(e.chi);
+      var nome = p
+        ? '<b class="nome">' + p.chi + '</b>' +
+          (p.assist ? '<span class="assist">assist ' + p.assist + '</span>' : '') +
+          '<span class="dir-sq">' + e.squadra + '</span>'
+        : '<span class="dir-sq sola">' + e.squadra + '</span>';
       return '<li class="' + classe + '">' +
         '<b>' + e.minuto + '</b>' +
         '<span class="che ' + e.tipo + '">' + e.testo + (e.punti ? ' ' + e.punti : '') + '</span>' +
-        '<span class="chi">' + (e.chi || e.squadra) + '</span></li>';
+        '<span class="chi">' + nome + '</span></li>';
     }).join('') || '<li class="niente">Nessun gol né penalità finora.</li>';
 
     radice.innerHTML =
@@ -306,6 +320,7 @@
           '</button>' +
         '</div>' +
         '<div class="dir-corpo">' +
+          selettore +
           '<div class="dir-tab">' +
             '<div class="dir-tab-alto">' +
               '<span class="cat">' + etichetta(p) + '</span>' +
@@ -325,7 +340,6 @@
             lineaTempo(p) +
           '</div>' +
           '<ul class="dir-eventi">' + eventi + '</ul>' +
-          selettore +
           (demo ? '<p class="dir-nota">Simulazione su partite vere in calendario ' +
                   '(13 settembre): squadre, categorie e palestre sono reali, i punteggi ' +
                   'generati. Dal vivo qui compaiono anche i marcatori.</p>'

@@ -342,5 +342,130 @@
    ]
   ],
   "stato": "published"
+ },
+ {
+  "casa": "Unihockey Schüpfheim",
+  "ospite": "Ticino Unihockey",
+  "torneo": "Mobiliar Unihockey Cup Männer",
+  "dove": "Sporthalle Moosmättili, Schüpfheim",
+  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/o7qfonhnycpoc7k4wkzg.png",
+  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png",
+  "vera": true,
+  "eventi": [
+   [
+    "00:00",
+    "Spielbeginn",
+    "",
+    ""
+   ],
+   [
+    "13:41",
+    "Torschütze 1:0",
+    "Unihockey Schüpfheim",
+    "D. Aeschbacher (S. Schnider)"
+   ],
+   [
+    "15:04",
+    "Torschütze 1:1",
+    "Ticino Unihockey",
+    "M. Gadoni (A. Bazzuri)"
+   ],
+   [
+    "19:30",
+    "2'-Strafe (Wiederholte Vergehen eines Teams)",
+    "Ticino Unihockey",
+    "A. Tomatis"
+   ],
+   [
+    "19:43",
+    "Torschütze 2:1",
+    "Unihockey Schüpfheim",
+    "J. Bucher (R. Stalder)"
+   ],
+   [
+    "20:00",
+    "Ende 1. Drittel",
+    "",
+    ""
+   ],
+   [
+    "20:00",
+    "Beginn 2. Drittel",
+    "",
+    ""
+   ],
+   [
+    "27:35",
+    "Torschütze 2:2",
+    "Ticino Unihockey",
+    "M. Bazzuri (A. Bazzuri)"
+   ],
+   [
+    "27:58",
+    "Torschütze 2:3",
+    "Ticino Unihockey",
+    "I. Andreetta (D. Bazzuri)"
+   ],
+   [
+    "32:50",
+    "2'-Strafe (Stossen)",
+    "Ticino Unihockey",
+    "D. Monighetti"
+   ],
+   [
+    "39:13",
+    "2'-Strafe (Überharter Körpereinsatz)",
+    "Ticino Unihockey",
+    "D. Bazzuri"
+   ],
+   [
+    "40:00",
+    "Ende 2. Drittel",
+    "",
+    ""
+   ],
+   [
+    "40:00",
+    "Beginn 3. Drittel",
+    "",
+    ""
+   ],
+   [
+    "41:52",
+    "2'-Strafe (Zu viele Spieler)",
+    "Ticino Unihockey",
+    "Z. Rossetti"
+   ],
+   [
+    "42:16",
+    "Torschütze 3:3",
+    "Unihockey Schüpfheim",
+    "D. Aeschbacher (A. Stadelmann)"
+   ],
+   [
+    "44:55",
+    "2'-Strafe (Hoher Stock)",
+    "Unihockey Schüpfheim",
+    "R. Kropf"
+   ],
+   [
+    "49:35",
+    "Torschütze 3:4",
+    "Ticino Unihockey",
+    "M. Tomatis (L. Koivisto)"
+   ],
+   [
+    "54:57",
+    "Torschütze 3:5",
+    "Ticino Unihockey",
+    "A. Tomatis (V. Heiska)"
+   ],
+   [
+    "",
+    "Spielende",
+    "",
+    ""
+   ]
+  ]
  }
 ]

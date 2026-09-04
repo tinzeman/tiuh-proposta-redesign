@@ -428,26 +428,30 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 #diretta[data-aperto="true"] .dir-freccia{transform:rotate(135deg)}
 /* aperto occupa tutto lo schermo: dietro non si vede più il sito */
 #diretta[data-aperto="true"] .dir-barra{display:none}
-.dir-schermo{position:fixed; inset:0; z-index:140; background:var(--ink); color:#fff;
-  display:flex; flex-direction:column; overflow-y:auto}
+.dir-schermo{position:fixed; inset:0; z-index:140; background:var(--ivory); color:var(--ink);
+  display:flex; flex-direction:column; overflow:hidden}
 /* «display:flex» qui sopra batterebbe il display:none che il browser dà a
    [hidden]: senza questa riga il pannello resta a schermo anche da chiuso. */
 .dir-schermo[hidden]{display:none}
 .dir-testa{display:flex; align-items:center; gap:12px; flex:none;
   padding:18px max(20px,calc(50vw - var(--wrap)/2));
-  border-bottom:1px solid rgba(255,255,255,.12)}
-.dir-testa .dir-eti{color:#fff; flex:none}
-.dir-testa .dir-squadre{flex:1; min-width:0; color:#fff}
-.dir-testa .dir-squadre u{background:rgba(255,255,255,.12)}
-.dir-testa .dir-stato{margin-left:0; color:rgba(255,255,255,.6); flex:none}
-.dir-chiudi{margin-left:auto; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+  background:var(--cream); border-bottom:1px solid var(--line)}
+.dir-testa .dir-eti{color:var(--red-ink); flex:none}
+.dir-testa .dir-squadre{flex:1; min-width:0; color:var(--ink)}
+.dir-testa .dir-squadre u{background:var(--navy); color:#fff}
+.dir-testa .dir-stato{margin-left:0; color:var(--ink-3); flex:none}
+.dir-chiudi{margin-left:auto; background:#fff; border:1px solid var(--line);
   width:44px; height:44px; border-radius:50%; cursor:pointer; display:grid; place-items:center;
   transition:.18s}
 .dir-chiudi:hover{background:var(--red); border-color:var(--red)}
-.dir-chiudi svg{width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2.4;
+.dir-chiudi svg{width:22px; height:22px; fill:none; stroke:var(--ink); stroke-width:2.4;
   stroke-linecap:round; stroke-linejoin:round}
-.dir-corpo{flex:1; display:flex; flex-direction:column; justify-content:center;
-  padding:34px max(20px,calc(50vw - var(--wrap)/2)) 46px}
+.dir-chiudi:hover svg{stroke:#fff}
+.dir-corpo{flex:1; min-height:0; overflow-y:auto; display:flex; flex-direction:column;
+  padding:26px max(20px,calc(50vw - var(--wrap)/2)) 46px}
+/* i figli non devono restringersi: senza questo il tabellone viene schiacciato
+   e parziali e linea del tempo restano tagliati fuori */
+.dir-corpo > *{flex:none}
 .dir-tabellone{display:flex; align-items:center; justify-content:center; gap:26px; flex-wrap:wrap;
   padding-bottom:16px}
 /* Cifre tabellari, peso 800 e spaziatura aperta: a corpo grande il 900 con
@@ -461,24 +465,30 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-riga{text-align:center; color:rgba(255,255,255,.55); font-size:.92rem; margin-bottom:26px}
 .dir-eventi{list-style:none; display:grid; gap:3px; max-width:680px; margin:0 auto; width:100%}
 .dir-eventi li{display:grid; grid-template-columns:66px auto 1fr; gap:14px; align-items:baseline;
-  padding:12px 15px; border-radius:0 9px 9px 0; background:rgba(255,255,255,.05);
-  border-left:4px solid transparent; font-size:.93rem}
+  padding:12px 15px; border-radius:0 9px 9px 0; background:#fff;
+  border:1px solid var(--line); border-left:4px solid var(--line); font-size:.93rem}
 /* Tre stati leggibili a colpo d'occhio, distinti per tinta e non per intensità:
    verde abbiamo segnato · rosso abbiamo subito · ambra penalità. */
-.dir-eventi li.gol.noi{background:rgba(29,158,117,.20); border-left:4px solid #1D9E75}
-.dir-eventi li.gol.loro{background:rgba(217,30,20,.20); border-left:4px solid var(--red)}
-.dir-eventi li.penalita{background:rgba(240,195,90,.14); border-left:4px solid #F0C35A}
-.dir-eventi li.gol .che{color:#7FE0BC}
-.dir-eventi li.gol.loro .che{color:#FF9A92}
-.dir-eventi li.penalita .che{color:#F5D084}
+.dir-eventi li.gol.noi{background:#E4F4ED; border-left-color:#1D9E75}
+.dir-eventi li.gol.loro{background:#FBEAE9; border-left-color:var(--red)}
+.dir-eventi li.penalita{background:#FBF1DC; border-left-color:#D9A521}
+.dir-eventi li.gol .che{color:#0F6E56}
+.dir-eventi li.gol.loro .che{color:var(--red-ink)}
+.dir-eventi li.penalita .che{color:#8A6A12}
 .dir-eventi li.penalita.noi::after,.dir-eventi li.gol::after{content:none}
-.dir-eventi li.niente{grid-template-columns:1fr; color:rgba(255,255,255,.5); background:none}
+.dir-eventi li.niente{grid-template-columns:1fr; color:var(--ink-3); background:none; border:0}
 .dir-eventi b{font-family:'Archivo',sans-serif; font-weight:800; font-size:.86rem;
-  color:rgba(255,255,255,.6)}
+  color:var(--ink-3)}
 .dir-eventi .che{font-weight:700; font-size:.82rem; letter-spacing:.04em; text-transform:uppercase}
 
-.dir-eventi .chi{color:rgba(255,255,255,.7); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.dir-nota{text-align:center; color:rgba(255,255,255,.4); font-size:.8rem; margin-top:16px}
+.dir-eventi .chi{color:var(--ink-2); display:flex; align-items:baseline; gap:10px;
+  flex-wrap:wrap; min-width:0}
+.dir-eventi .chi .nome{font-family:'Figtree',sans-serif; font-weight:700; color:var(--ink); font-size:.95rem}
+.dir-eventi .chi .assist{font-size:.82rem; color:var(--ink-3)}
+.dir-eventi .chi .dir-sq{font-size:.82rem; color:var(--ink-3); overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap}
+.dir-eventi .chi .dir-sq.sola{font-size:.93rem; color:var(--ink-2)}
+.dir-nota{text-align:center; color:var(--ink-3); font-size:.8rem; margin-top:20px}
 @media (max-width:820px){
   .dir-barra{gap:10px; padding:11px 18px; flex-wrap:wrap}
   .dir-squadre{flex:1 0 100%; order:3; white-space:normal; font-size:.92rem}
@@ -531,7 +541,7 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 
 /* ── tabellone da palazzetto ─────────────────────── */
 .dir-tab{background:#0B0A08; border-radius:18px; padding:30px 30px 26px; position:relative;
-  overflow:hidden; margin-bottom:26px}
+  overflow:hidden; margin:22px 0 26px}
 .dir-tab::before{content:""; position:absolute; inset:0; pointer-events:none;
   background:repeating-linear-gradient(0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px)}
 .dir-tab-alto{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:24px;
@@ -554,30 +564,32 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-tab-corpo > b i{font-style:normal; color:#4A443A; font-size:.5em; font-weight:700}
 
 /* ── pannello di tutte le partite, usato come selettore ── */
-.dir-pannello-partite{border-top:1px solid rgba(255,255,255,.12); padding-top:24px; margin-top:6px}
+.dir-pannello-partite{position:sticky; top:0; z-index:2; background:var(--ivory);
+  padding:0 0 20px; margin-bottom:4px; border-bottom:1px solid var(--line)}
 .dir-pannello-titolo{display:flex; align-items:center; gap:10px; font-size:.72rem; letter-spacing:.18em;
-  text-transform:uppercase; color:#8C8578; margin-bottom:16px}
+  text-transform:uppercase; color:var(--ink-3); margin:0 0 14px}
 .dir-vivo{width:8px; height:8px; border-radius:50%; background:#1D9E75; flex:none}
 .dir-piastre{display:grid; grid-template-columns:repeat(auto-fit,minmax(252px,1fr)); gap:12px}
-.dir-piastra{font-family:inherit; text-align:left; cursor:pointer; color:#fff;
-  background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:14px;
+.dir-piastra{font-family:inherit; text-align:left; cursor:pointer; color:var(--ink);
+  background:#fff; border:1px solid var(--line); border-radius:14px;
   padding:16px; display:grid; gap:10px; transition:.18s}
-.dir-piastra:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.24)}
-.dir-piastra[aria-selected="true"]{border-color:var(--red); background:rgba(217,30,20,.13)}
+.dir-piastra:hover{border-color:var(--navy); transform:translateY(-2px)}
+.dir-piastra[aria-selected="true"]{border-color:var(--red); border-width:2px; background:#fff}
 .dir-piastra .cat{font-size:.66rem; font-weight:800; letter-spacing:.13em; text-transform:uppercase;
-  background:rgba(255,255,255,.14); padding:4px 10px; border-radius:5px; justify-self:start}
-.dir-piastra[aria-selected="true"] .cat{background:var(--red)}
+  background:var(--cream); color:var(--navy); padding:4px 10px; border-radius:5px; justify-self:start}
+.dir-piastra[aria-selected="true"] .cat{background:var(--red); color:#fff}
 .dir-piastra .riga{display:flex; align-items:center; gap:10px}
 .dir-piastra .riga > span:not(.dir-stemma){flex:1; min-width:0; font-size:.93rem; overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap}
 .dir-piastra .riga b{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.2rem;
   font-variant-numeric:tabular-nums}
-.dir-piastra .riga.vince b{color:#7FE0BC}
-.dir-piastra .dir-stemma{width:28px; height:28px; border-radius:8px; padding:4px}
+.dir-piastra .riga.vince b{color:#0F6E56}
+.dir-piastra .dir-stemma{width:28px; height:28px; border-radius:8px; padding:4px;
+  background:var(--cream); box-shadow:none}
 .dir-piastra .dir-stemma-vuoto{font-size:.72rem}
-.dir-piastra .piede{display:flex; gap:10px; align-items:center; font-size:.78rem; color:#8C8578;
-  border-top:1px solid rgba(255,255,255,.1); padding-top:10px}
-.dir-piastra .piede em{font-style:normal; color:#B5AD9E}
+.dir-piastra .dir-coda{display:flex; gap:10px; align-items:center; font-size:.78rem; color:var(--ink-3);
+  border-top:1px solid var(--line); padding-top:10px}
+.dir-piastra .dir-coda em{font-style:normal; color:var(--ink-2); font-weight:600}
 
 @media (max-width:820px){
   .dir-tab{padding:20px 18px 18px; margin-bottom:20px}
