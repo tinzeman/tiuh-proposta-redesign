@@ -191,6 +191,96 @@
     });
   })();
 
+  /* ── classifica di categoria ──────────────────────────── */
+  (function classifica() {
+    var box = document.getElementById('classifica');
+    if (!box) return;
+    var API = 'https://api-v2.swissunihockey.ch/api/rankings';
+    var lega = box.getAttribute('data-lega');
+    var classe = box.getAttribute('data-classe');
+    var gruppo = box.getAttribute('data-gruppo');
+    var stagione = 2026;
+
+    function indirizzo(anno) {
+      return API + '?season=' + anno + '&league=' + lega + '&game_class=' + classe +
+        '&group=' + encodeURIComponent(gruppo);
+    }
+    function righeDi(j) {
+      var out = [];
+      ((((j || {}).data) || {}).regions || []).forEach(function (reg) {
+        (reg.rows || []).forEach(function (row) {
+          var celle = [], stemma = '';
+          (row.cells || []).forEach(function (c) {
+            var t = c.text;
+            celle.push(Object.prototype.toString.call(t) === '[object Array]'
+              ? t.join(' ') : (t ? String(t) : ''));
+            if (c.image && c.image.url && !stemma) stemma = c.image.url;
+          });
+          out.push({ celle: celle, stemma: stemma });
+        });
+      });
+      return out;
+    }
+    function disegna(righe, anno, titolo) {
+      if (!righe.length) {
+        box.innerHTML = '<p class="vuota">La classifica comparirà dopo le prime giornate.</p>';
+        return;
+      }
+      var corpo = righe.map(function (r) {
+        var c = r.celle;
+        var nostra = c.some(function (x) { return x.indexOf('Ticino Unihockey') === 0; });
+        var nome = c[2] || c[1];
+        return '<tr' + (nostra ? ' class="noi"' : '') + '>' +
+          '<td>' + c[0] + '</td>' +
+          '<td><span class="squadra">' +
+            (r.stemma ? '<img src="' + r.stemma + '" alt="" loading="lazy">' : '') +
+            '<span>' + nome + '</span></span></td>' +
+          '<td>' + (c[3] || '') + '</td>' +
+          '<td>' + (c[c.length - 4] || '') + '</td>' +
+          '<td>' + (c[c.length - 3] || '') + '</td>' +
+          '<td class="punti">' + (c[c.length - 1] || '') + '</td></tr>';
+      }).join('');
+      box.innerHTML =
+        '<p class="stato">' + titolo + '</p>' +
+        '<table><thead><tr><th>Rg</th><th>Squadra</th><th>G</th><th>Reti</th>' +
+        '<th>Diff</th><th>Punti</th></tr></thead><tbody>' + corpo + '</tbody></table>' +
+        '<p class="fonte">Fonte: swiss unihockey · ' + gruppo.replace('Gruppe', 'girone') + '</p>';
+    }
+    function chiedi(u) {
+      return fetch(u, { mode: 'cors' }).then(function (r) {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      });
+    }
+    function ciSiamo(righe) {
+      return righe.some(function (r) {
+        return r.celle.some(function (x) { return x.indexOf('Ticino Unihockey') === 0; });
+      });
+    }
+    chiedi(indirizzo(stagione)).then(function (j) {
+      var righe = righeDi(j);
+      if (righe.length) { disegna(righe, stagione, 'Stagione 2026/27'); return; }
+      /* Stagione non ancora cominciata. Si può mostrare quella conclusa, ma solo
+         se il club c'era: i gironi cambiano ogni anno, e una tabella senza di noi
+         non dice nulla. */
+      return chiedi(indirizzo(stagione - 1)).then(function (k) {
+        var vecchie = righeDi(k);
+        if (vecchie.length && ciSiamo(vecchie)) {
+          disegna(vecchie, stagione - 1,
+            'La stagione 2026/27 non è ancora cominciata — qui sotto la classifica finale 2025/26');
+        } else {
+          disegna([], stagione, '');
+        }
+      }).catch(function () {
+        /* Nessuna tabella nemmeno l'anno scorso (capita nei gironi regionali):
+           vale il messaggio neutro, non un errore. */
+        disegna([], stagione, '');
+      });
+    }).catch(function () {
+      box.innerHTML = '<p class="vuota">Classifica non disponibile in questo momento.</p>';
+    });
+  })();
+
   /* ── partite da swiss unihockey ── */
   (function partite() {
     var lista = $('#calList'), prossima = $('#pxChi');
