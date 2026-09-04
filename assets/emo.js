@@ -590,8 +590,8 @@
 
   /* ── partite da swiss unihockey ── */
   (function partite() {
-    var lista = $('#calList'), prossima = $('#pxChi');
-    if (!lista && !prossima) return;
+    var lista = $('#calList'), prossima = $('#pxChi'), diSquadra = $('#prossime');
+    if (!lista && !prossima && !diSquadra) return;
 
     var API = 'https://api-v2.swissunihockey.ch/api/games?mode=club&club_id=435553' +
       '&season=2026&games_per_page=300';
@@ -717,6 +717,56 @@
       });
     }
 
+    /* Nella pagina di una squadra il calendario è solo il suo: stessa
+       impaginazione della pagina Partite, senza ripetere la categoria a
+       ogni riga perché è quella della pagina. */
+    function mostraSquadra() {
+      if (!diSquadra) return;
+      var comp = diSquadra.getAttribute('data-competizione') || '';
+      var ora = new Date(), righe = [];
+      for (var i = 0; i < tutte.length; i++) {
+        var g = tutte[i], dt = data(g);
+        if (!dt || dt < ora) continue;
+        if (comp && (g.c || '').indexOf(comp) !== 0) continue;
+        righe.push({ g: g, dt: dt });
+      }
+      diSquadra.innerHTML = '';
+      if (!righe.length) {
+        diSquadra.innerHTML = '<li class="vuoto">Il calendario della nuova stagione ' +
+          'non è ancora stato pubblicato.</li>';
+        return;
+      }
+      var SOGLIA = 8, aperte = false;
+      function dipingi() {
+        diSquadra.innerHTML = '';
+        var quante = aperte ? righe.length : Math.min(SOGLIA, righe.length);
+        righe.slice(0, quante).forEach(function (r) {
+          var g = r.g, casa = g.h.indexOf('Ticino Unihockey') === 0;
+          var sg = segno(g);
+          var li = document.createElement('li');
+          li.innerHTML =
+            '<div class="quando"><b>' + giorno(r.dt) + '</b><span>' + (g.t || '') + '</span></div>' +
+            '<div class="chi"><b><em>' + (casa ? g.h : g.a) + '</em> – ' + (casa ? g.a : g.h) +
+              '</b><span>' + g.v + '</span></div>' +
+            '<span class="segno' + sg.c + '">' + sg.t + '</span>';
+          diSquadra.appendChild(li);
+        });
+        if (righe.length > SOGLIA) {
+          var li = document.createElement('li');
+          li.className = 'ancora';
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.textContent = aperte
+            ? 'Mostra solo le prossime otto'
+            : 'Mostra tutte le ' + righe.length + ' partite in programma';
+          b.addEventListener('click', function () { aperte = !aperte; dipingi(); });
+          li.appendChild(b);
+          diSquadra.appendChild(li);
+        }
+      }
+      dipingi();
+    }
+
     function costruisciFiltri() {
       var box = $('#calFiltri');
       if (!box) return;
@@ -760,6 +810,7 @@
       mostraCalendario();
       mostraRisultati();
       mostraProssima();
+      mostraSquadra();
     }
 
     var chiuso = false;
