@@ -548,7 +548,8 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 
 /* ── tabellone da palazzetto ─────────────────────── */
 .dir-tab{background:var(--cream); border:1px solid var(--line); border-radius:18px;
-  padding:30px 30px 26px; position:relative; margin:22px 0 26px}
+  padding:26px 30px 22px; position:sticky; top:0; z-index:1; margin:18px 0 20px;
+  box-shadow:0 10px 26px -18px rgba(20,17,13,.5)}
 .dir-tab-alto{display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:24px;
   font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); position:relative}
 .dir-tab-alto .cat{background:var(--red); color:#fff; padding:5px 12px; border-radius:5px;
@@ -654,3 +655,7 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-pannello-partite[data-aperto="true"] .dir-freccetta{transform:rotate(225deg) translateY(-2px)}
 .dir-pannello-partite[data-aperto="false"]{padding-bottom:8px}
 .dir-piastre[hidden]{display:none}
+
+/* intestazione della cronaca */
+.dir-cronaca-titolo{font-size:.68rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 auto 12px; max-width:680px; width:100%}

@@ -237,7 +237,7 @@
       }
     });
     return { punti: punti, tempo: tempo, finita: finita, tutti: elenco,
-             eventi: elenco.slice(-6).reverse(), casa: casa, ospite: ospite };
+             eventi: elenco.slice().reverse(), casa: casa, ospite: ospite };
   }
 
   /* ── disegno ── */
@@ -351,6 +351,9 @@
             parziali(p) +
             lineaTempo(p) +
           '</div>' +
+          '<p class="dir-cronaca-titolo">' +
+            (p.eventi.length ? p.eventi.length + ' episodi · dal più recente' : 'Cronaca') +
+          '</p>' +
           '<ul class="dir-eventi">' + eventi + '</ul>' +
           (demo ? '<p class="dir-nota">Simulazione su partite vere in calendario ' +
                   '(13 settembre): squadre, categorie e palestre sono reali, i punteggi ' +
