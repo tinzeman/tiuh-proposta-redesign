@@ -792,7 +792,13 @@
     if (!ROSA || !ROSA.length) return;
 
     var API = 'https://api-v2.swissunihockey.ch/api';
-    var schermo = null, quale = -1, filo = 0;
+    var schermo = null, quale = -1, filo = 0, piani = [];
+
+    /* I blocchi di dati scorrono a velocità appena diverse fra loro: il
+       ritratto resta leggibile sotto e la lettura acquista profondità. */
+    function raccogliPiani() {
+      piani = schermo ? $$('[data-piano]', schermo) : [];
+    }
 
     function eta(nato) {
       var m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(nato || '');
@@ -834,7 +840,7 @@
             '<span class="gio-giu" aria-hidden="true"></span>' +
           '</div>' +
           '<div class="gio-foglio">' +
-            '<dl class="gio-fatti">' +
+            '<dl class="gio-fatti" data-piano="1">' +
               fatto('Numero', g.n ? '#' + (+g.n || g.n) : '') +
               fatto('Ruolo', g.ruolo) +
               fatto('Nato il', dataLunga(g.nato)) +
@@ -844,7 +850,7 @@
             '</dl>' +
             '<div class="gio-numeri"><p class="gio-attesa">Carriera in arrivo…</p></div>' +
             (g.sponsor.length
-              ? '<div class="gio-sponsor"><h3>Sponsor personale</h3><div>' +
+              ? '<div class="gio-sponsor" data-piano="0.5"><h3>Sponsor personale</h3><div>' +
                 g.sponsor.map(function (s) {
                   return '<a href="' + s.sito + '" target="_blank" rel="noopener">' +
                     '<img src="' + s.img + '" alt="" loading="lazy"></a>';
@@ -881,7 +887,7 @@
         nostre.forEach(function (r) { quante[r.stagione] = 1; });
         b.innerHTML =
           '<h3>In rossoblù</h3>' +
-          '<div class="gio-cifre">' +
+          '<div class="gio-cifre" data-piano="1.6">' +
             '<div><b>' + Object.keys(quante).length + '</b><span>stagioni</span></div>' +
             '<div><b>' + tot.p + '</b><span>partite</span></div>' +
             '<div><b>' + tot.g + '</b><span>gol</span></div>' +
@@ -889,7 +895,7 @@
             '<div><b>' + (tot.g + tot.a) + '</b><span>punti</span></div>' +
           '</div>' +
           '<h3>Stagione per stagione</h3>' +
-          '<div class="gio-tabella"><table><thead><tr><th>Stagione</th><th>Lega</th>' +
+          '<div class="gio-tabella" data-piano="0.7"><table><thead><tr><th>Stagione</th><th>Lega</th>' +
           '<th>Pt.</th><th>Gol</th><th>Ass.</th><th>Punti</th></tr></thead><tbody>' +
           righe.map(function (r, i) {
             return '<tr' + (i === 0 ? ' class="prima"' : '') + '><td>' + r.stagione + '</td>' +
@@ -897,6 +903,7 @@
               '<td>' + r.a + '</td><td class="punti">' + (r.g + r.a) + '</td></tr>';
           }).join('') + '</tbody></table></div>' +
           '<p class="gio-fonte">Carriera da swiss unihockey.</p>';
+        raccogliPiani();
       }
       var salvato = null;
       try { salvato = JSON.parse(localStorage.getItem(chiave) || 'null'); } catch (e) {}
@@ -951,6 +958,13 @@
           /* passata la foto i comandi cambiano fondo: sull'avorio del foglio
              il bianco su bianco sparirebbe */
           schermo.classList.toggle('sceso', q > 0.55);
+          var alta = scorri.clientHeight || 1;
+          for (var i = 0; i < piani.length; i++) {
+            var el = piani[i], r = el.getBoundingClientRect();
+            var d = (r.top + r.height / 2 - alta / 2) / alta;   // −1 sopra, +1 sotto
+            el.style.transform =
+              'translate3d(0,' + (d * 30 * parseFloat(el.getAttribute('data-piano'))).toFixed(1) + 'px,0)';
+          }
         });
       }, { passive: true });
     }
@@ -989,6 +1003,7 @@
       if (prec) prec.addEventListener('click', function () { apri((i - 1 + ROSA.length) % ROSA.length); });
       if (succ) succ.addEventListener('click', function () { apri((i + 1) % ROSA.length); });
       parallasse();
+      raccogliPiani();
       carriera(g, mio);
       requestAnimationFrame(function () {
         if (schermo) schermo.classList.add('aperto');
