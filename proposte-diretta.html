@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Partite in corso — quattro proposte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800;900&family=Figtree:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#14110D; --ink-2:#57503F; --ink-3:#6F675A;
+  --ivory:#FAF6EF; --cream:#EFE3D0; --line:#E2D5BE;
+  --navy:#0F2942; --navy-2:#081A2C; --red:#D91E14; --red-ink:#B0140D;
+  --verde:#1D9E75; --ambra:#F0C35A;
+}
+*{box-sizing:border-box; margin:0; padding:0}
+body{font-family:'Figtree',system-ui,sans-serif; background:var(--ivory); color:var(--ink);
+  font-size:17px; line-height:1.6; -webkit-font-smoothing:antialiased}
+.wrap{max-width:1180px; margin:0 auto; padding:0 26px}
+h1,h2,h3{font-family:'Archivo',sans-serif; letter-spacing:-.03em; line-height:1.02}
+a{color:inherit}
+.intro{padding:56px 0 34px}
+.intro h1{font-size:clamp(2rem,4.6vw,3.2rem); font-weight:800; margin-bottom:14px}
+.intro p{color:var(--ink-2); max-width:64ch}
+.barra-scelta{position:sticky; top:0; z-index:20; background:rgba(250,246,239,.94);
+  backdrop-filter:blur(12px); border-bottom:1px solid var(--line); padding:12px 0}
+.barra-scelta .wrap{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+.barra-scelta b{font-size:.74rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3);
+  margin-right:6px}
+.barra-scelta button{font-family:inherit; font-size:.92rem; font-weight:600; padding:9px 17px;
+  border-radius:99px; border:1.5px solid var(--line); background:#fff; color:var(--ink-2);
+  cursor:pointer; transition:.16s}
+.barra-scelta button:hover{border-color:var(--navy)}
+.barra-scelta button[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:#fff}
+.scheda{padding:52px 0 64px; border-bottom:1px solid var(--line)}
+.scheda-testa{margin-bottom:26px; max-width:62ch}
+.scheda-testa span{display:block; font-size:.74rem; font-weight:800; letter-spacing:.18em;
+  text-transform:uppercase; color:var(--red-ink); margin-bottom:9px}
+.scheda-testa h2{font-size:1.9rem; font-weight:800; margin-bottom:10px}
+.scheda-testa p{color:var(--ink-2); font-size:1.02rem}
+.telaio{border-radius:20px; overflow:hidden; box-shadow:0 20px 60px rgba(20,17,13,.14)}
+
+/* ─────────── 1 · TABELLONE ─────────── */
+.tab{background:#0B0A08; color:#fff; padding:38px 34px 30px; position:relative}
+.tab::before{content:""; position:absolute; inset:0;
+  background:repeating-linear-gradient(0deg, rgba(255,255,255,.028) 0 1px, transparent 1px 3px);
+  pointer-events:none}
+.tab-alto{display:flex; align-items:center; gap:14px; font-size:.72rem; letter-spacing:.2em;
+  text-transform:uppercase; color:#8A8striped; color:#8C8578; margin-bottom:26px}
+.tab-alto .cat{background:var(--red); color:#fff; padding:5px 12px; border-radius:5px; letter-spacing:.14em}
+.tab-alto .sp{flex:1}
+.tab-corpo{display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:26px}
+.tab-sq{display:flex; align-items:center; gap:18px}
+.tab-sq.ospite{flex-direction:row-reverse; text-align:right}
+.tab-stemma{width:88px; height:88px; border-radius:14px; background:rgba(255,255,255,.06);
+  display:grid; place-items:center; padding:11px; flex:none}
+.tab-stemma img{max-width:100%; max-height:100%; object-fit:contain}
+.tab-sq b{font-family:'Archivo',sans-serif; font-size:1.5rem; font-weight:700; letter-spacing:-.02em;
+  display:block; line-height:1.1}
+.tab-sq small{color:#8C8578; font-size:.8rem; letter-spacing:.1em; text-transform:uppercase}
+.tab-punti{display:flex; align-items:center; gap:16px; font-family:'Archivo',sans-serif;
+  font-weight:800; font-size:clamp(3.4rem,8vw,5.6rem); letter-spacing:.02em;
+  font-variant-numeric:tabular-nums; line-height:1}
+.tab-punti i{font-style:normal; color:#4A443A; font-size:.5em}
+.tab-basso{margin-top:28px; padding-top:18px; border-top:1px solid rgba(255,255,255,.1);
+  display:flex; align-items:center; gap:16px; font-size:.9rem; color:#B5AD9E; min-height:26px}
+.tab-basso em{font-style:normal; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  font-size:.7rem; padding:4px 10px; border-radius:4px}
+.tab-basso em.gol{background:rgba(29,158,117,.2); color:#7FE0BC}
+.tab-basso em.gol.subito{background:rgba(217,30,20,.22); color:#FF9A92}
+.tab-basso em.pen{background:rgba(240,195,90,.16); color:#F5D084}
+
+/* ─────────── 2 · GRAFICA TELEVISIVA ─────────── */
+.tv{background:linear-gradient(160deg,#12283F,#081A2C 60%,#2A0A07); padding:34px; color:#fff}
+.tv-bug{display:flex; align-items:stretch; border-radius:10px; overflow:hidden;
+  box-shadow:0 10px 34px rgba(0,0,0,.4); max-width:640px}
+.tv-lato{display:flex; align-items:center; gap:12px; padding:14px 18px; background:rgba(255,255,255,.1);
+  flex:1; min-width:0}
+.tv-lato.b{flex-direction:row-reverse; text-align:right}
+.tv-lato img{width:34px; height:34px; object-fit:contain; flex:none}
+.tv-lato b{font-family:'Archivo',sans-serif; font-size:1.02rem; font-weight:700; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis}
+.tv-punti{background:var(--red); display:flex; align-items:center; gap:10px; padding:14px 22px;
+  font-family:'Archivo',sans-serif; font-weight:800; font-size:1.9rem; letter-spacing:.02em;
+  font-variant-numeric:tabular-nums; flex:none}
+.tv-punti i{font-style:normal; opacity:.55; font-size:.7em}
+.tv-tempo{background:#0B0A08; display:grid; place-items:center; padding:0 16px; flex:none;
+  font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase}
+.tv-linea{margin-top:26px; max-width:640px}
+.tv-linea .asse{position:relative; height:4px; background:rgba(255,255,255,.14); border-radius:99px}
+.tv-linea .tacca{position:absolute; top:50%; width:12px; height:12px; border-radius:50%;
+  transform:translate(-50%,-50%); border:2px solid #081A2C}
+.tv-linea .tacca.noi{background:var(--verde)} .tv-linea .tacca.loro{background:var(--red)}
+.tv-linea .tacca.pen{background:var(--ambra); width:8px; height:8px}
+.tv-linea .tempi{display:flex; justify-content:space-between; margin-top:10px; font-size:.72rem;
+  color:rgba(255,255,255,.45); letter-spacing:.1em; text-transform:uppercase}
+.tv-cat{margin-bottom:18px; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase;
+  color:rgba(255,255,255,.55)}
+.tv-cat b{background:rgba(255,255,255,.14); padding:4px 11px; border-radius:5px; color:#fff;
+  letter-spacing:.12em; margin-right:10px}
+
+/* ─────────── 3 · CRONACA EDITORIALE ─────────── */
+.cro{background:#fff; padding:40px 34px 34px}
+.cro-testa{text-align:center; padding-bottom:26px; border-bottom:1px solid var(--line); margin-bottom:28px}
+.cro-cat{font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:var(--red-ink);
+  font-weight:800; margin-bottom:14px}
+.cro-sq{display:flex; align-items:center; justify-content:center; gap:26px; flex-wrap:wrap}
+.cro-sq img{width:52px; height:52px; object-fit:contain}
+.cro-sq b{font-family:'Instrument Serif',serif; font-size:1.6rem; font-weight:400; letter-spacing:0}
+.cro-punti{font-family:'Instrument Serif',serif; font-size:3.4rem; letter-spacing:.02em;
+  font-variant-numeric:tabular-nums}
+.cro-stato{margin-top:12px; color:var(--ink-3); font-size:.92rem}
+.cro-linea{position:relative; max-width:660px; margin:0 auto; padding:6px 0}
+.cro-linea::before{content:""; position:absolute; left:50%; top:0; bottom:0; width:1px;
+  background:var(--line)}
+.cro-ev{position:relative; display:grid; grid-template-columns:1fr 78px 1fr; align-items:center;
+  gap:8px; padding:11px 0}
+.cro-ev .minuto{grid-column:2; font-family:'Archivo',sans-serif; font-size:.78rem;
+  font-weight:700; color:var(--ink-3); text-align:center; background:#fff; padding:4px 0;
+  z-index:1; letter-spacing:.04em}
+.cro-ev .box{padding:11px 15px; border-radius:12px; background:var(--ivory); font-size:.95rem}
+.cro-ev.sinistra .box{grid-column:1; text-align:right}
+.cro-ev.destra .box{grid-column:3}
+.cro-ev .box b{display:block; font-size:.72rem; letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:3px}
+.cro-ev.gol .box{background:rgba(29,158,117,.12)} .cro-ev.gol .box b{color:#0F6E56}
+.cro-ev.gol.subito .box{background:rgba(217,30,20,.1)} .cro-ev.gol.subito .box b{color:var(--red-ink)}
+.cro-ev.pen .box{background:rgba(240,195,90,.16)} .cro-ev.pen .box b{color:#8A6A12}
+
+/* ─────────── 4 · PANNELLO MULTI-PARTITA ─────────── */
+.multi{background:var(--ink); padding:32px; color:#fff}
+.multi-alto{display:flex; align-items:center; gap:12px; margin-bottom:22px; font-size:.74rem;
+  letter-spacing:.18em; text-transform:uppercase; color:#8C8578}
+.multi-alto .vivo{width:8px; height:8px; border-radius:50%; background:var(--verde)}
+.multi-griglia{display:grid; grid-template-columns:repeat(auto-fit,minmax(268px,1fr)); gap:14px}
+.piastra{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); border-radius:14px;
+  padding:18px; display:grid; gap:12px; transition:.18s; cursor:pointer}
+.piastra:hover{background:rgba(255,255,255,.09); border-color:rgba(255,255,255,.24)}
+.piastra[data-scelta="true"]{border-color:var(--red); background:rgba(217,30,20,.12)}
+.piastra .cat{font-size:.68rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+  color:#fff; background:rgba(255,255,255,.14); padding:4px 10px; border-radius:5px; justify-self:start}
+.piastra[data-scelta="true"] .cat{background:var(--red)}
+.piastra .riga{display:flex; align-items:center; gap:11px}
+.piastra .riga img{width:26px; height:26px; object-fit:contain; flex:none}
+.piastra .riga span{flex:1; min-width:0; font-size:.95rem; overflow:hidden; text-overflow:ellipsis;
+  white-space:nowrap}
+.piastra .riga b{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.24rem;
+  font-variant-numeric:tabular-nums}
+.piastra .riga.vince b{color:#7FE0BC}
+.piastra .piede{display:flex; gap:10px; align-items:center; font-size:.8rem; color:#8C8578;
+  border-top:1px solid rgba(255,255,255,.1); padding-top:11px}
+.piastra .piede em{font-style:normal; color:#B5AD9E}
+
+.nota{margin-top:20px; font-size:.9rem; color:var(--ink-3)}
+.pro-contro{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:22px}
+.pro-contro div{background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px 18px}
+.pro-contro h3{font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; margin-bottom:8px;
+  font-family:'Figtree',sans-serif; font-weight:800}
+.pro-contro .si h3{color:#0F6E56} .pro-contro .no h3{color:var(--red-ink)}
+.pro-contro p{font-size:.93rem; color:var(--ink-2)}
+
+@media (max-width:760px){
+  .tab-corpo{grid-template-columns:1fr; gap:18px; text-align:center}
+  .tab-sq,.tab-sq.ospite{flex-direction:column; text-align:center}
+  .tab-punti{justify-content:center}
+  .tv-bug{flex-wrap:wrap}
+  .tv-lato{flex:1 0 100%}
+  .cro-ev{grid-template-columns:1fr}
+  .cro-ev .minuto{text-align:left}
+  .cro-ev.sinistra .box,.cro-ev.destra .box{grid-column:1; text-align:left}
+  .cro-linea::before{display:none}
+  .pro-contro{grid-template-columns:1fr}
+  .tab,.tv,.cro,.multi{padding:22px 18px}
+}
+</style>
+</head>
+<body>
+
+<div class="intro">
+  <div class="wrap">
+    <h1>Partite in corso: quattro modi di raccontarle</h1>
+    <p>Stessi dati veri, stessa giornata — domenica 13 settembre, quando il club ha quattro partite
+      aperte insieme. Cambia solo il modo di mostrarle. Scegli una partita qui sotto e confronta.</p>
+  </div>
+</div>
+
+<div class="barra-scelta">
+  <div class="wrap"><b>Partita</b><span id="scelte"></span></div>
+</div>
+
+<section class="scheda">
+  <div class="wrap">
+    <div class="scheda-testa">
+      <span>Proposta 1</span>
+      <h2>Tabellone da palazzetto</h2>
+      <p>Il linguaggio del tabellone luminoso: nero profondo, cifre enormi, stemmi grandi ai lati.
+        Si legge da lontano e su un televisore in sede.</p>
+    </div>
+    <div class="telaio"><div class="tab" id="p1"></div></div>
+    <div class="pro-contro">
+      <div class="si"><h3>Funziona quando</h3><p>Serve impatto immediato: una sola partita, il
+        punteggio è la notizia, si guarda dal telefono di corsa o su uno schermo in palestra.</p></div>
+      <div class="no"><h3>Meno adatto se</h3><p>Vuoi seguire più partite insieme: occupa molto spazio
+        per un solo risultato.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="scheda">
+  <div class="wrap">
+    <div class="scheda-testa">
+      <span>Proposta 2</span>
+      <h2>Grafica televisiva</h2>
+      <p>La barra che si vede in sovrimpressione durante le dirette, con la linea del tempo sotto:
+        ogni pallino è un gol o una penalità, collocato al minuto in cui è successo.</p>
+    </div>
+    <div class="telaio"><div class="tv" id="p2"></div></div>
+    <div class="pro-contro">
+      <div class="si"><h3>Funziona quando</h3><p>Conta l'andamento, non solo il risultato: in un colpo
+        d'occhio vedi quando è successo tutto e chi ha preso il sopravvento.</p></div>
+      <div class="no"><h3>Meno adatto se</h3><p>Il pubblico è poco abituato ai codici televisivi: la
+        linea del tempo va spiegata la prima volta.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="scheda">
+  <div class="wrap">
+    <div class="scheda-testa">
+      <span>Proposta 3</span>
+      <h2>Cronaca editoriale</h2>
+      <p>Il minuto per minuto di un buon giornale: fondo chiaro, titolo in carattere tipografico,
+        eventi su due colonne — a sinistra una squadra, a destra l'altra.</p>
+    </div>
+    <div class="telaio"><div class="cro" id="p3"></div></div>
+    <div class="pro-contro">
+      <div class="si"><h3>Funziona quando</h3><p>Si legge con calma, magari dopo: è la forma che resta
+        leggibile anche a partita finita, come racconto.</p></div>
+      <div class="no"><h3>Meno adatto se</h3><p>Serve il colpo d'occhio: il punteggio non domina, e su
+        schermo stretto le due colonne diventano una.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="scheda">
+  <div class="wrap">
+    <div class="scheda-testa">
+      <span>Proposta 4</span>
+      <h2>Pannello di tutte le partite</h2>
+      <p>Nessun selettore: tutte le partite in corso insieme, una piastrella ciascuna. Tocchi quella
+        che ti interessa per aprirla. È la risposta diretta alle giornate con quattro gare insieme.</p>
+    </div>
+    <div class="telaio"><div class="multi" id="p4"></div></div>
+    <div class="pro-contro">
+      <div class="si"><h3>Funziona quando</h3><p>Il club gioca su più campi insieme — cioè in 21
+        giornate su 48. Un genitore vede subito com'è andata anche all'altra squadra.</p></div>
+      <div class="no"><h3>Meno adatto se</h3><p>C'è una partita sola: la griglia con una piastrella
+        sola è sprecata, meglio ricadere sulla proposta 1.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap" style="padding:44px 26px 70px">
+  <p class="nota">Squadre, categorie, palestre e orari sono reali, presi dal calendario di swiss
+    unihockey. I punteggi sono simulati e nessun marcatore è inventato: dal vivo i nomi arrivano
+    dall'API. Le proposte si possono anche combinare — per esempio la 4 come vista d'insieme e la 1
+    quando ne apri una.</p>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var MIN = 46;                       // minuto della partita mostrato
+  var dati = [], scelta = 0;
+
+  var CAT = { 'Junioren U16 C': 'U16 C', 'Junioren U14 B': 'U14 B',
+              'Junioren U21 B': 'U21 B', 'Junioren U18 B': 'U18 B',
+              'Junioren U16 A': 'U16 A', 'Junioren C Regional': 'Juniores C',
+              'Junioren D Regional': 'Juniores D', 'Herren NLB': 'Prima squadra',
+              'Mobiliar Unihockey Cup Männer': 'Coppa svizzera' };
+
+  function categoria(m) {
+    var base = (m.torneo || '').split(' Gruppe')[0].trim();
+    var nostra = m.casa.indexOf('Ticino Unihockey') === 0 ? m.casa : m.ospite;
+    var suff = nostra.replace('Ticino Unihockey', '').trim();
+    return (CAT[base] || base) + (suff ? ' ' + suff : '');
+  }
+  function minuti(t) {
+    if (!/^\d+:\d+$/.test(t || '')) return 999;
+    var p = t.split(':'); return (+p[0]) + (+p[1]) / 60;
+  }
+  function leggi(m, fino) {
+    var punti = '0:0', tempo = 1, ev = [];
+    m.eventi.forEach(function (c) {
+      if (minuti(c[0]) > fino) return;
+      var g = /^Torschütze\s+(\d+:\d+)/.exec(c[1]);
+      var p = /^(\d+)'-Strafe(?:\s*\((.+)\))?/.exec(c[1]);
+      var b = /^Beginn\s+(\d+)\./.exec(c[1]);
+      if (g) { punti = g[1]; ev.push({ m: c[0], tipo: 'gol', sq: c[2], punti: g[1] }); }
+      if (p) ev.push({ m: c[0], tipo: 'pen', sq: c[2], motivo: (p[2] || '').toLowerCase() });
+      if (b) tempo = +b[1];
+    });
+    var noi = m.casa.indexOf('Ticino Unihockey') === 0;
+    return { casa: m.casa, ospite: m.ospite, punti: punti, tempo: tempo, ev: ev,
+             noiCasa: noi, cat: categoria(m), dove: m.dove,
+             sc: m.stemmaCasa, so: m.stemmaOspite };
+  }
+  function nostro(s) { return s.indexOf('Ticino Unihockey') === 0; }
+  function sigla(n) {
+    return n.replace(/^(UH|UHC|SV|FC)\s+/, '').split(' ').slice(0, 2).join(' ');
+  }
+
+  function dis1(p) {
+    var u = p.ev[p.ev.length - 1];
+    var coda = u ? '<em class="' + (u.tipo === 'gol'
+        ? ('gol' + (nostro(u.sq) ? '' : ' subito')) : 'pen') + '">' +
+      (u.tipo === 'gol' ? 'Gol ' + u.punti : 'Penalità') + '</em><span>' + u.m + ' · ' + u.sq +
+      (u.motivo ? ' · ' + u.motivo : '') + '</span>' : '<span>In attesa del primo episodio.</span>';
+    return '<div class="tab-alto"><span class="cat">' + p.cat + '</span>' +
+      '<span>' + p.tempo + '° tempo</span><span class="sp"></span><span>' + p.dove + '</span></div>' +
+      '<div class="tab-corpo">' +
+        '<div class="tab-sq"><span class="tab-stemma"><img src="' + p.sc + '" alt=""></span>' +
+          '<span><b>' + p.casa + '</b><small>casa</small></span></div>' +
+        '<div class="tab-punti"><span>' + p.punti.split(':')[0] + '</span><i>:</i>' +
+          '<span>' + p.punti.split(':')[1] + '</span></div>' +
+        '<div class="tab-sq ospite"><span class="tab-stemma"><img src="' + p.so + '" alt=""></span>' +
+          '<span><b>' + p.ospite + '</b><small>ospite</small></span></div>' +
+      '</div><div class="tab-basso">' + coda + '</div>';
+  }
+
+  function dis2(p) {
+    var tacche = p.ev.map(function (e) {
+      var m = Math.min(minuti(e.m) / 60, 1) * 100;
+      var cls = e.tipo === 'pen' ? 'pen' : (nostro(e.sq) ? 'noi' : 'loro');
+      return '<span class="tacca ' + cls + '" style="left:' + m.toFixed(1) + '%" title="' +
+        e.m + '"></span>';
+    }).join('');
+    return '<div class="tv-cat"><b>' + p.cat + '</b>' + p.dove + '</div>' +
+      '<div class="tv-bug">' +
+        '<div class="tv-lato"><img src="' + p.sc + '" alt=""><b>' + sigla(p.casa) + '</b></div>' +
+        '<div class="tv-punti"><span>' + p.punti.split(':')[0] + '</span><i>:</i>' +
+          '<span>' + p.punti.split(':')[1] + '</span></div>' +
+        '<div class="tv-lato b"><img src="' + p.so + '" alt=""><b>' + sigla(p.ospite) + '</b></div>' +
+        '<div class="tv-tempo">' + p.tempo + '°</div>' +
+      '</div>' +
+      '<div class="tv-linea"><div class="asse">' + tacche + '</div>' +
+        '<div class="tempi"><span>inizio</span><span>20\'</span><span>40\'</span><span>60\'</span></div>' +
+      '</div>';
+  }
+
+  function dis3(p) {
+    var righe = p.ev.slice().reverse().map(function (e) {
+      var mio = nostro(e.sq);
+      var lato = (mio === p.noiCasa) ? 'sinistra' : 'destra';
+      var cls = e.tipo === 'gol' ? ('gol' + (mio ? '' : ' subito')) : 'pen';
+      var testo = e.tipo === 'gol' ? 'Gol ' + e.punti : 'Penalità 2′' +
+        (e.motivo ? ' · ' + e.motivo : '');
+      return '<div class="cro-ev ' + lato + ' ' + cls + '">' +
+        '<div class="box"><b>' + testo + '</b>' + e.sq + '</div>' +
+        '<div class="minuto">' + e.m + '</div></div>';
+    }).join('');
+    return '<div class="cro-testa"><div class="cro-cat">' + p.cat + ' · ' + p.dove + '</div>' +
+      '<div class="cro-sq"><img src="' + p.sc + '" alt=""><b>' + p.casa + '</b>' +
+        '<span class="cro-punti">' + p.punti + '</span>' +
+        '<b>' + p.ospite + '</b><img src="' + p.so + '" alt=""></div>' +
+      '<p class="cro-stato">' + p.tempo + '° tempo in corso</p></div>' +
+      '<div class="cro-linea">' + (righe || '<p class="cro-stato">Nessun episodio finora.</p>') + '</div>';
+  }
+
+  function dis4() {
+    var piastre = dati.map(function (m, i) {
+      var p = leggi(m, MIN);
+      var u = p.ev[p.ev.length - 1];
+      var pz = p.punti.split(':');
+      return '<div class="piastra" data-i="' + i + '" data-scelta="' + (i === scelta) + '">' +
+        '<span class="cat">' + p.cat + '</span>' +
+        '<div class="riga' + (+pz[0] > +pz[1] ? ' vince' : '') + '">' +
+          '<img src="' + p.sc + '" alt=""><span>' + p.casa + '</span><b>' + pz[0] + '</b></div>' +
+        '<div class="riga' + (+pz[1] > +pz[0] ? ' vince' : '') + '">' +
+          '<img src="' + p.so + '" alt=""><span>' + p.ospite + '</span><b>' + pz[1] + '</b></div>' +
+        '<div class="piede"><span>' + p.tempo + '° tempo</span>' +
+          (u ? '<em>' + u.m + ' ' + (u.tipo === 'gol' ? 'gol' : 'penalità') + '</em>' : '') +
+        '</div></div>';
+    }).join('');
+    return '<div class="multi-alto"><span class="vivo"></span><span>4 partite in corso ·' +
+      ' domenica 13 settembre</span></div><div class="multi-griglia">' + piastre + '</div>';
+  }
+
+  function disegna() {
+    var p = leggi(dati[scelta], MIN);
+    document.getElementById('p1').innerHTML = dis1(p);
+    document.getElementById('p2').innerHTML = dis2(p);
+    document.getElementById('p3').innerHTML = dis3(p);
+    document.getElementById('p4').innerHTML = dis4();
+    [].forEach.call(document.querySelectorAll('.piastra'), function (el) {
+      el.addEventListener('click', function () { scelta = +el.getAttribute('data-i'); disegna(); });
+    });
+    [].forEach.call(document.querySelectorAll('#scelte button'), function (b, i) {
+      b.setAttribute('aria-pressed', String(i === scelta));
+    });
+  }
+
+  fetch('data/diretta-demo.json').then(function (r) { return r.json(); }).then(function (d) {
+    dati = d;
+    document.getElementById('scelte').innerHTML = d.map(function (m, i) {
+      return '<button type="button" data-i="' + i + '">' + categoria(m) + '</button>';
+    }).join(' ');
+    [].forEach.call(document.querySelectorAll('#scelte button'), function (b) {
+      b.addEventListener('click', function () { scelta = +b.getAttribute('data-i'); disegna(); });
+    });
+    disegna();
+  });
+})();
+</script>
+</body>
+</html>
