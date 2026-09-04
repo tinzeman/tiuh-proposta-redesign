@@ -414,7 +414,8 @@
         '<span class="dir-rullo"><span class="dir-nastro">' +
           '<span class="dir-faccia">' + barraDentro(p) + '</span>' +
         '</span></span>' +
-        '<span class="dir-freccia" aria-hidden="true"></span>' +
+        '<span class="dir-freccia" aria-hidden="true">' +
+          '<svg viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></svg></span>' +
       '</button>' +
       '<div class="dir-schermo" id="dir-pannello" role="dialog" aria-modal="true" ' +
            'aria-label="Partita in corso"' + (statoAperto ? '' : ' hidden') + '>' +
