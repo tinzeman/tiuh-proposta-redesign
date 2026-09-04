@@ -829,28 +829,20 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .gio-scorri{position:absolute; inset:0; overflow-y:auto; overflow-x:hidden;
   -webkit-overflow-scrolling:touch; outline:none}
 
-/* fascia in testa: prende il posto del nome grande appena questo sale via */
-.gio-testa{position:absolute; top:0; left:0; right:0; z-index:2; display:flex;
-  align-items:center; gap:13px; color:#fff; pointer-events:none;
-  padding:15px 84px 15px max(24px,calc(50vw - var(--wrap)/2));
-  background:linear-gradient(180deg, rgba(11,9,8,.82), rgba(11,9,8,.5));
-  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
-  border-bottom:1px solid rgba(255,255,255,.14);
-  opacity:0; transform:translateY(-100%);
-  transition:opacity .34s ease-out, transform .42s cubic-bezier(.16,1,.3,1)}
-.gio-schermo.sceso .gio-testa{opacity:1; transform:none}
-.gio-testa b{font-family:'Archivo',sans-serif; font-weight:900; font-size:1.34rem;
-  line-height:1; font-variant-numeric:tabular-nums; flex:none;
-  background:rgba(255,255,255,.14); border-radius:9px; padding:6px 10px}
-.gio-testa span{font-family:'Archivo',sans-serif; font-weight:800; font-size:1.12rem;
-  letter-spacing:-.01em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.gio-testa em{font-style:normal; font-size:.76rem; font-weight:700; letter-spacing:.12em;
-  text-transform:uppercase; color:rgba(255,255,255,.6); flex:none}
+/* Il titolo non sta dentro la copertina: parte dal basso, sale con lo
+   scorrimento e si ferma in cima, della stessa misura con cui si è aperto.
+   Dietro di sé porta una sfumatura che si accende man mano, così i dati che
+   gli passano sotto restano leggibili. */
+.gio-titolo{position:absolute; top:0; left:0; right:0; z-index:2; pointer-events:none;
+  color:#fff; padding:14px max(24px,calc(50vw - var(--wrap)/2)) 20px; will-change:transform}
+/* coprente dove sta il nome, poi si dissolve: quello che scorre sotto
+   sparisce nel buio invece di leggersi in trasparenza attraverso le lettere */
+.gio-titolo::before{content:''; position:absolute; inset:-60px 0 -96px; z-index:-1;
+  opacity:var(--fondo,0); transition:opacity .2s linear;
+  background:linear-gradient(180deg, rgba(11,9,8,.97) 0%, rgba(11,9,8,.96) 58%,
+    rgba(11,9,8,.74) 80%, rgba(11,9,8,0) 100%)}
 
-.gio-apice{position:relative; min-height:100svh; display:flex; flex-direction:column;
-  justify-content:flex-end; color:#fff;
-  /* il foglio di vetro risale di 14vh: senza questo margine il nome
-     finirebbe sotto di esso e resterebbe leggibile a metà */
+.gio-apice{position:relative; min-height:100svh;
   padding:0 max(24px,calc(50vw - var(--wrap)/2)) calc(14vh + 54px)}
 .gio-numero{position:absolute; right:max(18px,calc(50vw - var(--wrap)/2)); top:12vh;
   font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(7rem,22vw,17rem);
@@ -959,15 +951,13 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
   .gio-passo.prec{left:20px}
   .gio-passo.succ{right:20px}
   .gio-chiudi{top:16px; right:16px}
-  .gio-testa{padding:13px 68px 13px 20px; gap:10px}
-  .gio-testa b{font-size:1.16rem; padding:5px 8px}
-  .gio-testa span{font-size:1rem}
-  .gio-testa em{display:none}
+  .gio-titolo{padding:12px 20px 16px}
   .gio-sponsor img{height:38px}
 }
 @media (prefers-reduced-motion:reduce){
-  /* senza animazioni non c'è nessuno che accenda la fascia: sta lì da subito */
-  .gio-testa{transition:none; opacity:1; transform:none}
+  /* senza scorrimento animato il titolo sta in cima da subito */
+  .gio-titolo{position:sticky; transform:none !important}
+  .gio-titolo::before{opacity:1}
   .gio-tappa{height:auto}
   .gio-tappa-fermo{position:static; height:auto; margin-bottom:44px}
   .gio-fatto{opacity:1; transform:none; filter:none; transition:none}

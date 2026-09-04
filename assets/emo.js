@@ -831,19 +831,17 @@
       var sotto = [g.ruolo, eta(g.nato)].filter(Boolean).join(' · ');
       return '<div class="gio-sfondo"><img src="' + g.foto + '" alt=""></div>' +
         '<div class="gio-velo"></div>' +
-        /* Quando il nome grande esce di scena questa fascia lo sostituisce:
-           scorrendo la carriera si deve sempre sapere di chi si sta leggendo. */
-        '<div class="gio-testa" aria-hidden="true">' +
-          (g.n ? '<b>' + (+g.n || g.n) + '</b>' : '') +
-          '<span>' + g.nome + '</span>' +
-          (g.ruolo ? '<em>' + g.ruolo + '</em>' : '') +
+
+        /* Il nome non sta dentro la copertina: sale con lo scorrimento e si
+           ferma in cima, della stessa misura con cui si è aperto. */
+        '<div class="gio-titolo">' +
+          '<h2 class="gio-nome"><span>' + nome[0] + '</span>' +
+            (cognome ? '<span>' + cognome + '</span>' : '') + '</h2>' +
+          (sotto ? '<p class="gio-ruolo">' + sotto + '</p>' : '') +
         '</div>' +
         '<div class="gio-scorri" tabindex="-1">' +
           '<div class="gio-apice">' +
             '<span class="gio-numero" aria-hidden="true">' + (+g.n || g.n) + '</span>' +
-            '<h2 class="gio-nome"><span>' + nome[0] + '</span>' +
-              (cognome ? '<span>' + cognome + '</span>' : '') + '</h2>' +
-            (sotto ? '<p class="gio-ruolo">' + sotto + '</p>' : '') +
             '<span class="gio-giu" aria-hidden="true"></span>' +
           '</div>' +
           '<div class="gio-foglio">' +
@@ -954,13 +952,24 @@
       return { tappa: tappa, carte: carte };
     }
 
+    /* Dal basso della copertina fino in cima: il viaggio dura una schermata,
+       poi il nome resta lì, della stessa misura, per tutta la lettura. */
+    function poseTitolo(q, alta) {
+      var titolo = schermo && schermo.querySelector('.gio-titolo');
+      if (!titolo) return;
+      var suo = titolo.offsetHeight;
+      var giu = Math.max(0, alta - suo - alta * 0.14 - 44);
+      var su = Math.max(10, alta * 0.022);
+      titolo.style.transform = 'translate3d(0,' + (giu + (su - giu) * q).toFixed(1) + 'px,0)';
+      titolo.style.setProperty('--fondo', q.toFixed(3));
+    }
+
     function parallasse() {
       var scorri = schermo.querySelector('.gio-scorri');
       /* Il parallasse muove la cornice; la lenta deriva della foto resta
          all'animazione CSS dentro, così le due non si sovrascrivono. */
       var foto = schermo.querySelector('.gio-sfondo');
       var numero = schermo.querySelector('.gio-numero');
-      var nome = schermo.querySelector('.gio-nome');
       var apice = schermo.querySelector('.gio-apice');
       var seq = preparaTappa();
       if (!scorri || lento) return;
@@ -972,11 +981,11 @@
           atteso = false;
           var y = scorri.scrollTop, h = apice.offsetHeight || 1;
           var q = Math.min(1, y / h);
+          poseTitolo(q, scorri.clientHeight || h);
           /* La foto sale più piano di tutto il resto e si ferma quando il
              foglio l'ha coperta: oltre non servirebbe, e scoprirebbe il fondo. */
           foto.style.transform = 'translate3d(0,' + (-Math.min(y, h) * 0.3) + 'px,0)';
           if (numero) numero.style.transform = 'translate3d(0,' + (-y * 0.42) + 'px,0)';
-          if (nome) nome.style.transform = 'translate3d(0,' + (-y * 0.16) + 'px,0)';
           apice.style.opacity = String(Math.max(0, 1 - q * 1.25));
           /* passata la foto i comandi cambiano fondo: sull'avorio del foglio
              il bianco su bianco sparirebbe */
@@ -1035,6 +1044,8 @@
       if (prec) prec.addEventListener('click', function () { apri((i - 1 + ROSA.length) % ROSA.length); });
       if (succ) succ.addEventListener('click', function () { apri((i + 1) % ROSA.length); });
       parallasse();
+      var primo = schermo.querySelector('.gio-scorri');
+      poseTitolo(0, (primo && primo.clientHeight) || window.innerHeight);
       raccogliPiani();
       carriera(g, mio);
       requestAnimationFrame(function () {
