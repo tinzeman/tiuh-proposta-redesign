@@ -54,6 +54,9 @@
     'spielverzögerung': 'ritardo di gioco',
     'unsportliches verhalten': 'comportamento antisportivo',
     'distanzvergehen': 'distanza non rispettata',
+    'unkorrekter abstand': 'distanza non rispettata',
+    'zeitspiel': 'gioco temporeggiante',
+    'behinderung': 'ostruzione',
     'rückenangriff': 'carica da dietro',
     'bandencheck': 'carica contro la balaustra',
     'falscher wechsel': 'cambio irregolare',
@@ -170,7 +173,10 @@
 
     var eventi = p.eventi.map(function (e) {
       var mio = e.squadra.indexOf('Ticino Unihockey') === 0;
-      return '<li class="' + (mio ? 'noi' : '') + '">' +
+      /* Il colore della riga dice che cosa è successo, non solo a chi:
+         verde gol nostro, rosso gol subito, ambra penalità. */
+      var classe = e.tipo + (mio ? ' noi' : ' loro');
+      return '<li class="' + classe + '">' +
         '<b>' + e.minuto + '</b>' +
         '<span class="che ' + e.tipo + '">' + e.testo + (e.punti ? ' ' + e.punti : '') + '</span>' +
         '<span class="chi">' + (e.chi || e.squadra) + '</span></li>';
@@ -189,19 +195,31 @@
           (partite.length > 1 ? partite.length + ' partite · ' : '') + stato + '</span>' +
         '<span class="dir-freccia" aria-hidden="true"></span>' +
       '</button>' +
-      '<div class="dir-pannello" id="dir-pannello"' + (statoAperto ? '' : ' hidden') + '>' +
-        selettore +
-        '<div class="dir-tabellone">' +
-          '<span class="dir-nome">' + p.casa + '</span>' +
-          '<b>' + p.punti + '</b>' +
-          '<span class="dir-nome">' + p.ospite + '</span>' +
+      '<div class="dir-schermo" id="dir-pannello" role="dialog" aria-modal="true" ' +
+           'aria-label="Partita in corso"' + (statoAperto ? '' : ' hidden') + '>' +
+        '<div class="dir-testa">' +
+          '<span class="dir-punto"' + (p.finita ? ' data-finita="1"' : '') +
+            (demo ? ' data-demo="1"' : '') + '></span>' +
+          '<span class="dir-eti">' +
+            (demo ? 'Simulazione' : (p.finita ? 'Partita finita' : 'In diretta')) + '</span>' +
+          '<button type="button" class="dir-chiudi" aria-label="Chiudi">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>' +
+          '</button>' +
         '</div>' +
-        '<p class="dir-riga">' + (p.torneo || '') + ' · ' + stato +
-          (p.dove ? ' · ' + p.dove : '') + '</p>' +
-        '<ul class="dir-eventi">' + eventi + '</ul>' +
-        (demo ? '<p class="dir-nota">Riproduzione di una partita vera già giocata, ' +
-                'per mostrare il funzionamento.</p>'
-              : '<p class="dir-nota">Dati da swiss unihockey, aggiornati circa ogni minuto.</p>') +
+        '<div class="dir-corpo">' +
+          selettore +
+          '<div class="dir-tabellone">' +
+            '<span class="dir-nome">' + p.casa + '</span>' +
+            '<b>' + p.punti + '</b>' +
+            '<span class="dir-nome">' + p.ospite + '</span>' +
+          '</div>' +
+          '<p class="dir-riga">' + (p.torneo || '') + ' · ' + stato +
+            (p.dove ? ' · ' + p.dove : '') + '</p>' +
+          '<ul class="dir-eventi">' + eventi + '</ul>' +
+          (demo ? '<p class="dir-nota">Riproduzione di una partita vera già giocata, ' +
+                  'per mostrare il funzionamento.</p>'
+                : '<p class="dir-nota">Dati da swiss unihockey, aggiornati circa ogni minuto.</p>') +
+        '</div>' +
       '</div>';
 
     radice.setAttribute('data-visibile', 'true');
@@ -212,23 +230,43 @@
         disegna();
       });
     });
-    radice.querySelector('.dir-barra').addEventListener('click', function () {
-      statoAperto = !statoAperto;
-      ricorda(statoAperto ? 'aperto' : 'chiuso');
-      var pan = radice.querySelector('.dir-pannello');
-      pan.hidden = !statoAperto;
-      this.setAttribute('aria-expanded', String(statoAperto));
-      radice.setAttribute('data-aperto', String(statoAperto));
-    });
+    radice.querySelector('.dir-barra').addEventListener('click', function () { apri(true); });
+    var chiudi = radice.querySelector('.dir-chiudi');
+    if (chiudi) chiudi.addEventListener('click', function () { apri(false); });
+    applicaApertura();
     var vivo = radice.querySelector('.dir-annuncio');
     if (vivo) vivo.textContent = 'Punteggio ' + nostri + ' a ' + loro + ', ' + stato;
+  }
+
+  /* A schermo intero il sito dietro sparisce: si segue solo la partita. */
+  function applicaApertura() {
+    if (!radice) return;
+    var schermo = radice.querySelector('.dir-schermo');
+    var barra = radice.querySelector('.dir-barra');
+    if (schermo) schermo.hidden = !statoAperto;
+    if (barra) barra.setAttribute('aria-expanded', String(statoAperto));
+    radice.setAttribute('data-aperto', String(statoAperto));
+    document.documentElement.style.overflow = statoAperto ? 'hidden' : '';
+  }
+
+  function apri(v) {
+    statoAperto = v;
+    ricorda(v ? 'aperto' : 'chiuso');
+    applicaApertura();
+    if (!v) {
+      var b = radice.querySelector('.dir-barra');
+      if (b) b.focus();
+    }
   }
 
   function nascondi(motivo) {
     if (motivo && window.console && console.warn) {
       console.warn('[diretta] niente da mostrare:', motivo && motivo.message || motivo);
     }
-    if (radice) radice.setAttribute('data-visibile', 'false');
+    if (radice) {
+      radice.setAttribute('data-visibile', 'false');
+      if (statoAperto) { statoAperto = false; applicaApertura(); }
+    }
   }
 
   /* La prima volta che compare, il pannello si apre da solo: deve saltare
@@ -333,6 +371,9 @@
   function avvia() {
     radice = document.getElementById('diretta');
     if (!radice) return;
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && statoAperto) apri(false);
+    });
     if (/[?&]diretta=demo/.test(location.search)) { ripiegoSimulazione(); return; }
     cerca();
     setInterval(cerca, RITMO);
