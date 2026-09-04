@@ -1043,6 +1043,20 @@
       var succ = schermo.querySelector('.gio-passo.succ');
       if (prec) prec.addEventListener('click', function () { apri((i - 1 + ROSA.length) % ROSA.length); });
       if (succ) succ.addEventListener('click', function () { apri((i + 1) % ROSA.length); });
+      /* Col dito si cambia giocatore scorrendo di lato: la soglia in
+         orizzontale è più alta di quella verticale, altrimenti si
+         cambierebbe scheda mentre si legge. */
+      var px = 0, py = 0, pt = 0;
+      var area = schermo.querySelector('.gio-scorri');
+      area.addEventListener('pointerdown', function (e) {
+        px = e.clientX; py = e.clientY; pt = Date.now();
+      });
+      area.addEventListener('pointerup', function (e) {
+        var dx = e.clientX - px, dy = e.clientY - py;
+        if (Date.now() - pt > 700) return;
+        if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.6) return;
+        apri((i + (dx < 0 ? 1 : -1) + ROSA.length) % ROSA.length);
+      });
       parallasse();
       var primo = schermo.querySelector('.gio-scorri');
       poseTitolo(0, (primo && primo.clientHeight) || window.innerHeight);

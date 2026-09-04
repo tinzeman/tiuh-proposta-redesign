@@ -834,7 +834,7 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
    Dietro di sé porta una sfumatura che si accende man mano, così i dati che
    gli passano sotto restano leggibili. */
 .gio-titolo{position:absolute; top:0; left:0; right:0; z-index:2; pointer-events:none;
-  color:#fff; padding:14px max(24px,calc(50vw - var(--wrap)/2)) 20px; will-change:transform}
+  color:#fff; padding:14px max(74px,calc(50vw - var(--wrap)/2)) 20px; will-change:transform}
 /* coprente dove sta il nome, poi si dissolve: quello che scorre sotto
    sparisce nel buio invece di leggersi in trasparenza attraverso le lettere */
 .gio-titolo::before{content:''; position:absolute; inset:-60px 0 -96px; z-index:-1;
@@ -843,8 +843,8 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
     rgba(11,9,8,.74) 80%, rgba(11,9,8,0) 100%)}
 
 .gio-apice{position:relative; min-height:100svh;
-  padding:0 max(24px,calc(50vw - var(--wrap)/2)) calc(14vh + 54px)}
-.gio-numero{position:absolute; right:max(18px,calc(50vw - var(--wrap)/2)); top:12vh;
+  padding:0 max(74px,calc(50vw - var(--wrap)/2)) calc(14vh + 54px)}
+.gio-numero{position:absolute; right:max(74px,calc(50vw - var(--wrap)/2)); top:12vh;
   font-family:'Archivo',sans-serif; font-weight:900; font-size:clamp(7rem,22vw,17rem);
   line-height:.8; color:rgba(255,255,255,.14); letter-spacing:-.04em; will-change:transform}
 .gio-nome{font-family:'Archivo',sans-serif; font-weight:900; letter-spacing:-.028em;
@@ -871,7 +871,9 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 /* Il foglio dei dati sta in trasparenza sul ritratto: vetro scuro sfocato,
    così la foto continua a vedersi sotto le cifre. */
 .gio-foglio{position:relative; color:#fff; margin-top:-14vh;
-  padding:16vh max(24px,calc(50vw - var(--wrap)/2)) 100px;
+  /* margine laterale abbondante: le frecce per cambiare giocatore stanno
+     lì dentro e non devono passare sopra la tabella */
+  padding:16vh max(74px,calc(50vw - var(--wrap)/2)) 100px;
   background:linear-gradient(180deg, rgba(11,9,8,0) 0%, rgba(11,9,8,.4) 16%,
     rgba(11,9,8,.6) 46%, rgba(11,9,8,.78) 100%);
   backdrop-filter:blur(9px) saturate(118%); -webkit-backdrop-filter:blur(9px) saturate(118%)}
@@ -923,21 +925,24 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .gio-sponsor img{height:44px; width:auto; object-fit:contain; background:#fff;
   padding:9px 13px; border-radius:11px}
 
+/* fondo scuro, non chiaro: questi comandi passano sopra la foto e sopra la
+   tabella, e devono staccarsi da tutti e due */
 .gio-chiudi,.gio-passo{position:fixed; z-index:3; width:46px; height:46px; border-radius:50%;
-  display:grid; place-items:center; cursor:pointer; background:rgba(255,255,255,.16);
-  border:1px solid rgba(255,255,255,.5); transition:.18s; backdrop-filter:blur(6px)}
+  display:grid; place-items:center; cursor:pointer; background:rgba(11,9,8,.62);
+  border:1px solid rgba(255,255,255,.46); transition:.18s;
+  backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+  box-shadow:0 6px 20px rgba(0,0,0,.35)}
 .gio-chiudi svg,.gio-passo svg{width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2.4;
   stroke-linecap:round; stroke-linejoin:round}
 .gio-chiudi:hover,.gio-passo:hover{background:#fff}
 .gio-chiudi:hover svg,.gio-passo:hover svg{stroke:var(--ink)}
-/* le frecce servono per passare da un giocatore all'altro: hanno senso
-   davanti al ritratto, non sopra la tabella della carriera */
-.gio-passo{opacity:1; transition:opacity .3s, background .18s}
-.gio-schermo.sceso .gio-passo{opacity:0; pointer-events:none}
+/* si deve poter cambiare giocatore da qualunque punto della scheda,
+   non solo tornando in testa */
+.gio-passo{opacity:1}
 .gio-chiudi{top:20px; right:20px}
 .gio-passo{top:50%; margin-top:-23px}
-.gio-passo.prec{left:20px}
-.gio-passo.succ{right:20px}
+.gio-passo.prec{left:14px}
+.gio-passo.succ{right:14px}
 
 /* il ritratto in rosa è un bottone: nessun contorno da bottone */
 .pista .volto{border:0; padding:0; background:none; font:inherit; text-align:left;
