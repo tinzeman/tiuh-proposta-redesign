@@ -105,6 +105,16 @@
     return cat + (suffisso ? ' ' + suffisso : '');
   }
 
+  /* Gli stemmi arrivano dal dettaglio partita; se mancano si mostra
+     un tondo con l'iniziale, così l'impaginato non si sfalda. */
+  function stemma(url, nome) {
+    if (url) {
+      return '<span class="dir-stemma"><img src="' + url + '" alt="" loading="lazy"></span>';
+    }
+    var i = (nome || '?').replace(/^(FC|UHC|SV|UH)\s+/i, '').charAt(0).toUpperCase();
+    return '<span class="dir-stemma dir-stemma-vuoto">' + i + '</span>';
+  }
+
   function avversario(p) {
     return p.casa.indexOf('Ticino Unihockey') === 0 ? p.ospite : p.casa;
   }
@@ -202,16 +212,23 @@
             (demo ? ' data-demo="1"' : '') + '></span>' +
           '<span class="dir-eti">' +
             (demo ? 'Simulazione' : (p.finita ? 'Partita finita' : 'In diretta')) + '</span>' +
-          '<button type="button" class="dir-chiudi" aria-label="Chiudi">' +
-            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg>' +
+          '<span class="dir-squadre">' +
+            (partite.length > 1 ? '<u>' + etichetta(p) + '</u> ' : '') +
+            p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
+          '<span class="dir-stato">' +
+            (partite.length > 1 ? partite.length + ' partite · ' : '') + stato + '</span>' +
+          '<button type="button" class="dir-chiudi" aria-label="Riduci il punteggio dal vivo">' +
+            '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>' +
           '</button>' +
         '</div>' +
         '<div class="dir-corpo">' +
           selettore +
           '<div class="dir-tabellone">' +
-            '<span class="dir-nome">' + p.casa + '</span>' +
+            '<span class="dir-lato">' + stemma(p.stemmaCasa, p.casa) +
+              '<span class="dir-nome">' + p.casa + '</span></span>' +
             '<b>' + p.punti + '</b>' +
-            '<span class="dir-nome">' + p.ospite + '</span>' +
+            '<span class="dir-lato">' + stemma(p.stemmaOspite, p.ospite) +
+              '<span class="dir-nome">' + p.ospite + '</span></span>' +
           '</div>' +
           '<p class="dir-riga">' + (p.torneo || '') + ' · ' + stato +
             (p.dove ? ' · ' + p.dove : '') + '</p>' +
@@ -230,9 +247,13 @@
         disegna();
       });
     });
-    radice.querySelector('.dir-barra').addEventListener('click', function () { apri(true); });
+    radice.querySelector('.dir-barra').addEventListener('click', function () { apri(!statoAperto); });
     var chiudi = radice.querySelector('.dir-chiudi');
     if (chiudi) chiudi.addEventListener('click', function () { apri(false); });
+    var schermo = radice.querySelector('.dir-schermo');
+    if (schermo) schermo.addEventListener('click', function (e) {
+      if (e.target === schermo) apri(false);      // clic sullo spazio vuoto
+    });
     applicaApertura();
     var vivo = radice.querySelector('.dir-annuncio');
     if (vivo) vivo.textContent = 'Punteggio ' + nostri + ' a ' + loro + ', ' + stato;
@@ -279,12 +300,13 @@
     avviaDemo();
   }
 
+  /* La schermata copre tutta la pagina, perciò non si apre mai da sola:
+     sarebbe un sequestro. Compare la barra, che si fa notare; ad aprirla è chi
+     guarda. Cambiando pagina si ritrova però la scelta fatta. */
   function apriLaPrimaVolta() {
     if (giaMostrata) return;
     giaMostrata = true;
-    var scelto = ricordato();
-    statoAperto = (scelto === null) ? true : (scelto === 'aperto');
-    if (scelto === null) ricorda('aperto');
+    statoAperto = (ricordato() === 'aperto');
   }
 
   /* ── modalità dimostrativa ── */
@@ -302,6 +324,7 @@
           var fin = d.eventi.filter(function (c) { return minuti(c[0]) <= tempoDemo; });
           var p = leggiEventi(fin, d.casa, d.ospite);
           p.id = 'demo' + i; p.torneo = d.torneo; p.dove = d.dove;
+          p.stemmaCasa = d.stemmaCasa; p.stemmaOspite = d.stemmaOspite;
           return p;
         });
         apriLaPrimaVolta();
@@ -342,9 +365,22 @@
 
   function segui(lista) {
     var presi = lista.map(function (g) {
-      return chiedi(API + '/game_events/' + g.id)
-        .then(function (j) { return { g: g, righe: righeDi(j).map(function (r) { return r.celle; }) }; })
-        .catch(function () { return null; });
+      return Promise.all([
+        chiedi(API + '/game_events/' + g.id),
+        chiedi(API + '/games/' + g.id).catch(function () { return null; })
+      ]).then(function (due) {
+        var loghi = [];
+        if (due[1]) {
+          (((due[1].data || {}).regions) || []).forEach(function (reg) {
+            (reg.rows || []).forEach(function (row) {
+              (row.cells || []).forEach(function (c) {
+                if (c.image && c.image.url) loghi.push(c.image.url);
+              });
+            });
+          });
+        }
+        return { g: g, righe: righeDi(due[0]).map(function (r) { return r.celle; }), loghi: loghi };
+      }).catch(function () { return null; });
     });
     return Promise.all(presi).then(function (esiti) {
       var vive = [], concluse = [];
@@ -352,6 +388,7 @@
         if (!e || !e.righe.length) return;
         var p = leggiEventi(e.righe, e.g.casa, e.g.ospite);
         p.id = e.g.id; p.torneo = e.g.torneo; p.dove = e.g.dove;
+        p.stemmaCasa = e.loghi[0] || ''; p.stemmaOspite = e.loghi[1] || '';
         (p.finita ? concluse : vive).push(p);
       });
       /* prima quelle in corso; se non ce n'è nessuna resta l'ultima conclusa */

@@ -155,7 +155,9 @@
     "",
     ""
    ]
-  ]
+  ],
+  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/zhcpegxoskijdsrzia5i.png",
+  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png"
  },
  {
   "casa": "Unihockey Schüpfheim",
@@ -277,6 +279,8 @@
     "",
     ""
    ]
-  ]
+  ],
+  "stemmaCasa": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/o7qfonhnycpoc7k4wkzg.png",
+  "stemmaOspite": "https://res.cloudinary.com/swiss-unihockey/image/upload/t_club_logo/yjnozwuuabumcbibhu9f.png"
  }
 ]

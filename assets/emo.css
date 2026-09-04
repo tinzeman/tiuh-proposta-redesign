@@ -430,15 +430,22 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 #diretta[data-aperto="true"] .dir-barra{display:none}
 .dir-schermo{position:fixed; inset:0; z-index:140; background:var(--ink); color:#fff;
   display:flex; flex-direction:column; overflow-y:auto}
+/* «display:flex» qui sopra batterebbe il display:none che il browser dà a
+   [hidden]: senza questa riga il pannello resta a schermo anche da chiuso. */
+.dir-schermo[hidden]{display:none}
 .dir-testa{display:flex; align-items:center; gap:12px; flex:none;
   padding:18px max(20px,calc(50vw - var(--wrap)/2));
   border-bottom:1px solid rgba(255,255,255,.12)}
-.dir-testa .dir-eti{color:#fff}
+.dir-testa .dir-eti{color:#fff; flex:none}
+.dir-testa .dir-squadre{flex:1; min-width:0; color:#fff}
+.dir-testa .dir-squadre u{background:rgba(255,255,255,.12)}
+.dir-testa .dir-stato{margin-left:0; color:rgba(255,255,255,.6); flex:none}
 .dir-chiudi{margin-left:auto; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
   width:44px; height:44px; border-radius:50%; cursor:pointer; display:grid; place-items:center;
   transition:.18s}
 .dir-chiudi:hover{background:var(--red); border-color:var(--red)}
-.dir-chiudi svg{width:19px; height:19px; fill:none; stroke:#fff; stroke-width:2.2; stroke-linecap:round}
+.dir-chiudi svg{width:22px; height:22px; fill:none; stroke:#fff; stroke-width:2.4;
+  stroke-linecap:round; stroke-linejoin:round}
 .dir-corpo{flex:1; display:flex; flex-direction:column; justify-content:center;
   padding:34px max(20px,calc(50vw - var(--wrap)/2)) 46px}
 .dir-tabellone{display:flex; align-items:center; justify-content:center; gap:26px; flex-wrap:wrap;
@@ -500,3 +507,16 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-scelta button[aria-selected="true"] i{color:rgba(255,255,255,.8)}
 .dir-squadre u{text-decoration:none; background:rgba(0,0,0,.24); padding:2px 8px; border-radius:6px;
   font-size:.82rem; font-weight:800; letter-spacing:.04em; margin-right:6px}
+
+/* stemmi nel tabellone */
+.dir-lato{display:flex; flex-direction:column; align-items:center; gap:12px; min-width:0}
+.dir-stemma{width:76px; height:76px; display:grid; place-items:center; background:rgba(255,255,255,.07);
+  border-radius:18px; padding:9px; flex:none}
+.dir-stemma img{max-width:100%; max-height:100%; object-fit:contain}
+.dir-stemma-vuoto{font-family:'Archivo',sans-serif; font-weight:900; font-size:1.9rem;
+  color:rgba(255,255,255,.5)}
+@media (max-width:820px){
+  .dir-lato{flex-direction:row; gap:10px; align-items:center}
+  .dir-stemma{width:44px; height:44px; border-radius:12px; padding:5px}
+  .dir-stemma-vuoto{font-size:1.1rem}
+}
