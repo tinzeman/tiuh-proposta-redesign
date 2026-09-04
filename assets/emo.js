@@ -840,14 +840,16 @@
             '<span class="gio-giu" aria-hidden="true"></span>' +
           '</div>' +
           '<div class="gio-foglio">' +
-            '<dl class="gio-fatti" data-piano="1">' +
-              fatto('Numero', g.n ? '#' + (+g.n || g.n) : '') +
-              fatto('Ruolo', g.ruolo) +
-              fatto('Nato il', dataLunga(g.nato)) +
-              fatto('Nazionalità', g.paese) +
-              fatto('Altezza', g.altezza) +
-              fatto('Peso', g.peso) +
-            '</dl>' +
+            '<div class="gio-tappa"><div class="gio-tappa-fermo">' +
+              '<dl class="gio-fatti">' +
+                fatto('Numero', g.n ? '#' + (+g.n || g.n) : '') +
+                fatto('Ruolo', g.ruolo) +
+                fatto('Nato il', dataLunga(g.nato)) +
+                fatto('Nazionalità', g.paese) +
+                fatto('Altezza', g.altezza) +
+                fatto('Peso', g.peso) +
+              '</dl>' +
+            '</div></div>' +
             '<div class="gio-numeri"><p class="gio-attesa">Carriera in arrivo…</p></div>' +
             (g.sponsor.length
               ? '<div class="gio-sponsor" data-piano="0.5"><h3>Sponsor personale</h3><div>' +
@@ -932,6 +934,19 @@
 
     /* Il parallasse: la foto scorre a un terzo, il numero quasi in fretta,
        il nome nel mezzo. Tre velocità bastano a dare profondità. */
+    /* I dati principali si accendono uno alla volta: finché non ci sono
+       tutti la tappa resta ferma sotto gli occhi, poi la pagina riprende a
+       scorrere come sempre. */
+    function preparaTappa() {
+      var tappa = schermo.querySelector('.gio-tappa');
+      if (!tappa) return null;
+      var carte = $$('.gio-fatto', tappa);
+      if (!carte.length) { tappa.style.display = 'none'; return null; }
+      tappa.style.setProperty('--carte', carte.length);
+      if (lento) { carte.forEach(function (c) { c.classList.add('vede'); }); return null; }
+      return { tappa: tappa, carte: carte };
+    }
+
     function parallasse() {
       var scorri = schermo.querySelector('.gio-scorri');
       /* Il parallasse muove la cornice; la lenta deriva della foto resta
@@ -940,6 +955,7 @@
       var numero = schermo.querySelector('.gio-numero');
       var nome = schermo.querySelector('.gio-nome');
       var apice = schermo.querySelector('.gio-apice');
+      var seq = preparaTappa();
       if (!scorri || lento) return;
       var atteso = false;
       scorri.addEventListener('scroll', function () {
@@ -959,6 +975,15 @@
              il bianco su bianco sparirebbe */
           schermo.classList.toggle('sceso', q > 0.55);
           var alta = scorri.clientHeight || 1;
+          if (seq) {
+            var rt = seq.tappa.getBoundingClientRect();
+            var corsa = seq.tappa.offsetHeight - (scorri.clientHeight || 1);
+            var avanti = corsa > 0 ? Math.min(1, Math.max(0, -rt.top / corsa)) : 1;
+            var n = seq.carte.length;
+            for (var k = 0; k < n; k++) {
+              seq.carte[k].classList.toggle('vede', avanti * n >= k);
+            }
+          }
           for (var i = 0; i < piani.length; i++) {
             var el = piani[i], r = el.getBoundingClientRect();
             var d = (r.top + r.height / 2 - alta / 2) / alta;   // −1 sopra, +1 sotto
