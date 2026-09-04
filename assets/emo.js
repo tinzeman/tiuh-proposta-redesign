@@ -831,6 +831,13 @@
       var sotto = [g.ruolo, eta(g.nato)].filter(Boolean).join(' · ');
       return '<div class="gio-sfondo"><img src="' + g.foto + '" alt=""></div>' +
         '<div class="gio-velo"></div>' +
+        /* Quando il nome grande esce di scena questa fascia lo sostituisce:
+           scorrendo la carriera si deve sempre sapere di chi si sta leggendo. */
+        '<div class="gio-testa" aria-hidden="true">' +
+          (g.n ? '<b>' + (+g.n || g.n) + '</b>' : '') +
+          '<span>' + g.nome + '</span>' +
+          (g.ruolo ? '<em>' + g.ruolo + '</em>' : '') +
+        '</div>' +
         '<div class="gio-scorri" tabindex="-1">' +
           '<div class="gio-apice">' +
             '<span class="gio-numero" aria-hidden="true">' + (+g.n || g.n) + '</span>' +
