@@ -412,6 +412,7 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
 .dir-punto{width:9px; height:9px; border-radius:50%; background:#fff; flex:none;
   box-shadow:0 0 0 0 rgba(255,255,255,.65); animation:dirPulsa 2s infinite}
 .dir-punto[data-finita]{animation:none; background:rgba(255,255,255,.6)}
+.dir-punto[data-demo]{animation:none; background:#F0C35A}
 @keyframes dirPulsa{70%{box-shadow:0 0 0 9px rgba(255,255,255,0)} 100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
 .dir-eti{font-size:.7rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; flex:none}
 .dir-squadre{font-size:.98rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}

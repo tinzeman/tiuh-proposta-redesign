@@ -20,7 +20,11 @@
   var PRIMA = 15 * 60000;         // quanto prima dell'inizio mostrare la barra
   var DOPO = 3.5 * 3600000;       // per quanto continuare a seguirla dopo l'inizio
 
-  var demo = /[?&]diretta=demo/.test(location.search);
+  /* La simulazione parte da sola quando non c'è nessuna partita in corso, così
+     la proposta mostra sempre come funziona. È dichiarata: la barra dice
+     «Simulazione», non «In diretta». Con ?diretta=vera resta solo il vero. */
+  var soloVere = /[?&]diretta=vera/.test(location.search);
+  var demo = false, demoAvviata = false, demoFerma = false;
   var radice = null, statoAperto = false, tempoDemo = 0;
   var partite = [], scelta = 0;   // più squadre del club possono giocare insieme
   var giaMostrata = false;
@@ -174,8 +178,10 @@
 
     radice.innerHTML =
       '<button class="dir-barra" type="button" aria-expanded="' + statoAperto + '" aria-controls="dir-pannello">' +
-        '<span class="dir-punto"' + (p.finita ? ' data-finita="1"' : '') + '></span>' +
-        '<span class="dir-eti">' + (p.finita ? 'Finita' : 'In diretta') + '</span>' +
+        '<span class="dir-punto"' + (p.finita ? ' data-finita="1"' : '') +
+          (demo ? ' data-demo="1"' : '') + '></span>' +
+        '<span class="dir-eti">' +
+          (demo ? 'Simulazione' : (p.finita ? 'Finita' : 'In diretta')) + '</span>' +
         '<span class="dir-squadre">' +
           (partite.length > 1 ? '<u>' + etichetta(p) + '</u> ' : '') +
           p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
@@ -227,6 +233,14 @@
 
   /* La prima volta che compare, il pannello si apre da solo: deve saltare
      all'occhio. Poi rispetta la scelta di chi guarda, anche cambiando pagina. */
+  function ripiegoSimulazione() {
+    if (soloVere) { nascondi(); return; }
+    if (demoAvviata) return;                    // già in corso: non riavviarla
+    demoAvviata = true;
+    demo = true;
+    avviaDemo();
+  }
+
   function apriLaPrimaVolta() {
     if (giaMostrata) return;
     giaMostrata = true;
@@ -254,7 +268,12 @@
         });
         apriLaPrimaVolta();
         disegna();
-        if (tempoDemo < 64) setTimeout(passo, lento ? 4000 : 1800);
+        if (demoFerma) return;                  // è cominciata una partita vera
+        if (tempoDemo < 64) {
+          setTimeout(passo, lento ? 4000 : 1800);
+        } else {
+          setTimeout(function () { tempoDemo = 0; passo(); }, 7000);
+        }
       }
       passo();
     }).catch(nascondi);
@@ -276,7 +295,8 @@
             candidate.push({ id: r.ids[0], casa: c[3], ospite: c[4], torneo: c[2], dove: c[1] });
           }
         });
-        if (!candidate.length) { nascondi(); return; }
+        if (!candidate.length) { ripiegoSimulazione(); return; }
+        demoFerma = true;                       // c'è del vero: la simulazione si ferma
         return segui(candidate.slice(0, 6));
       })
       .catch(nascondi);
@@ -298,7 +318,8 @@
       });
       /* prima quelle in corso; se non ce n'è nessuna resta l'ultima conclusa */
       var nuove = vive.length ? vive : concluse.slice(0, 1);
-      if (!nuove.length) { nascondi(); return; }
+      if (!nuove.length) { ripiegoSimulazione(); return; }
+      demo = false;
       var seguita = partite[scelta] && partite[scelta].id;
       partite = nuove;
       scelta = 0;
@@ -312,7 +333,7 @@
   function avvia() {
     radice = document.getElementById('diretta');
     if (!radice) return;
-    if (demo) { avviaDemo(); return; }
+    if (/[?&]diretta=demo/.test(location.search)) { ripiegoSimulazione(); return; }
     cerca();
     setInterval(cerca, RITMO);
     document.addEventListener('visibilitychange', function () {
