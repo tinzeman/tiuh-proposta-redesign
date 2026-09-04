@@ -451,3 +451,18 @@ section[id],footer[id],#contenuto{scroll-margin-top:calc(var(--testa) + 22px)}
   #diretta{transition:none}
   .dir-punto{animation:none}
 }
+
+/* selettore: quale partita seguire quando ne sono in corso più di una */
+.dir-scelta{display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:22px}
+.dir-scelta button{font-family:inherit; cursor:pointer; border:1.5px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.06); color:#fff; border-radius:12px; padding:9px 15px;
+  display:grid; gap:1px; justify-items:center; transition:.18s; min-width:104px}
+.dir-scelta button:hover{border-color:rgba(255,255,255,.5)}
+.dir-scelta button[aria-selected="true"]{background:var(--red); border-color:var(--red)}
+.dir-scelta b{font-family:'Archivo',sans-serif; font-size:.82rem; letter-spacing:.02em}
+.dir-scelta span{font-family:'Archivo',sans-serif; font-weight:900; font-size:1.16rem; letter-spacing:-.03em}
+.dir-scelta i{font-style:normal; font-size:.72rem; color:rgba(255,255,255,.58);
+  max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.dir-scelta button[aria-selected="true"] i{color:rgba(255,255,255,.8)}
+.dir-squadre u{text-decoration:none; background:rgba(0,0,0,.24); padding:2px 8px; border-radius:6px;
+  font-size:.82rem; font-weight:800; letter-spacing:.04em; margin-right:6px}

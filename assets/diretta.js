@@ -21,7 +21,8 @@
   var DOPO = 3.5 * 3600000;       // per quanto continuare a seguirla dopo l'inizio
 
   var demo = /[?&]diretta=demo/.test(location.search);
-  var radice = null, statoAperto = false, partita = null, tempoDemo = 0;
+  var radice = null, statoAperto = false, tempoDemo = 0;
+  var partite = [], scelta = 0;   // più squadre del club possono giocare insieme
 
   /* I motivi delle penalità arrivano in tedesco dal referto elettronico. */
   var MOTIVI = {
@@ -68,6 +69,28 @@
     return { tipo: 'altro', testo: t };
   }
 
+  /* Quale squadra del club sta giocando: sulla stessa giornata possono
+     esserci fino a quattro partite in contemporanea, anche di due formazioni
+     della stessa categoria (per esempio U14 B I e II). */
+  var CATEGORIE = {
+    'Herren NLB': 'Prima squadra', 'Mobiliar Unihockey Cup Männer': 'Coppa',
+    'Junioren U21 B': 'U21 B', 'Junioren U18 B': 'U18 B', 'Junioren U16 A': 'U16 A',
+    'Junioren U16 C': 'U16 C', 'Junioren U14 B': 'U14 B',
+    'Junioren C Regional': 'Juniores C', 'Junioren D Regional': 'Juniores D'
+  };
+
+  function etichetta(p) {
+    var base = (p.torneo || '').split(' Gruppe')[0].split('  ')[0].trim();
+    var cat = CATEGORIE[base] || base;
+    var nostra = p.casa.indexOf('Ticino Unihockey') === 0 ? p.casa : p.ospite;
+    var suffisso = nostra.replace('Ticino Unihockey', '').trim();   // «I», «II» quando c'è
+    return cat + (suffisso ? ' ' + suffisso : '');
+  }
+
+  function avversario(p) {
+    return p.casa.indexOf('Ticino Unihockey') === 0 ? p.ospite : p.casa;
+  }
+
   function chiedi(url) {
     return fetch(url, { mode: 'cors' }).then(function (r) {
       if (!r.ok) throw new Error(r.status);
@@ -110,13 +133,25 @@
   }
 
   /* ── disegno ── */
-  function disegna(p) {
-    if (!radice) return;
+  function disegna() {
+    if (!radice || !partite.length) return;
+    if (scelta >= partite.length) scelta = 0;
+    var p = partite[scelta];
     var noi = p.ospite.indexOf('Ticino Unihockey') === 0 ? 'ospite' : 'casa';
     var pz = p.punti.split(':');
     var nostri = noi === 'casa' ? pz[0] : pz[1];
     var loro = noi === 'casa' ? pz[1] : pz[0];
     var stato = p.finita ? 'Finita' : (p.tempo + '° tempo');
+
+    var selettore = '';
+    if (partite.length > 1) {
+      selettore = '<div class="dir-scelta" role="tablist" aria-label="Partita da seguire">' +
+        partite.map(function (q, i) {
+          return '<button type="button" role="tab" aria-selected="' + (i === scelta) + '" data-i="' + i + '">' +
+            '<b>' + etichetta(q) + '</b><span>' + q.punti + '</span>' +
+            '<i>' + (q.finita ? 'finita · ' : '') + avversario(q) + '</i></button>';
+        }).join('') + '</div>';
+    }
 
     var eventi = p.eventi.map(function (e) {
       var mio = e.squadra.indexOf('Ticino Unihockey') === 0;
@@ -130,11 +165,15 @@
       '<button class="dir-barra" type="button" aria-expanded="' + statoAperto + '" aria-controls="dir-pannello">' +
         '<span class="dir-punto"' + (p.finita ? ' data-finita="1"' : '') + '></span>' +
         '<span class="dir-eti">' + (p.finita ? 'Finita' : 'In diretta') + '</span>' +
-        '<span class="dir-squadre">' + p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
-        '<span class="dir-stato">' + stato + '</span>' +
+        '<span class="dir-squadre">' +
+          (partite.length > 1 ? '<u>' + etichetta(p) + '</u> ' : '') +
+          p.casa + ' <b>' + p.punti + '</b> ' + p.ospite + '</span>' +
+        '<span class="dir-stato">' +
+          (partite.length > 1 ? partite.length + ' partite · ' : '') + stato + '</span>' +
         '<span class="dir-freccia" aria-hidden="true"></span>' +
       '</button>' +
       '<div class="dir-pannello" id="dir-pannello"' + (statoAperto ? '' : ' hidden') + '>' +
+        selettore +
         '<div class="dir-tabellone">' +
           '<span class="dir-nome">' + p.casa + '</span>' +
           '<b>' + p.punti + '</b>' +
@@ -149,6 +188,13 @@
       '</div>';
 
     radice.setAttribute('data-visibile', 'true');
+    [].forEach.call(radice.querySelectorAll('.dir-scelta button'), function (b) {
+      b.addEventListener('click', function () {
+        scelta = +b.getAttribute('data-i');
+        statoAperto = true;
+        disegna();
+      });
+    });
     radice.querySelector('.dir-barra').addEventListener('click', function () {
       statoAperto = !statoAperto;
       var pan = radice.querySelector('.dir-pannello');
@@ -166,7 +212,7 @@
 
   /* ── modalità dimostrativa ── */
   function avviaDemo() {
-    fetch('data/diretta-demo.json').then(function (r) { return r.json(); }).then(function (d) {
+    fetch('data/diretta-demo.json').then(function (r) { return r.json(); }).then(function (elenco) {
       function minuti(m) {
         /* «Spielende» non ha minuto: vale come ultimissimo evento, non come primo */
         if (!/^\d+:\d+$/.test(m || '')) return 999;
@@ -175,12 +221,14 @@
       }
       function passo() {
         tempoDemo += 3;                       // tre minuti di gioco a ogni battuta
-        var fin = d.eventi.filter(function (c) { return minuti(c[0]) <= tempoDemo; });
-        var p = leggiEventi(fin, d.casa, d.ospite);
-        p.torneo = d.torneo;
-        p.dove = 'Sporthalle Moosmättili, Schüpfheim';
-        disegna(p);
-        if (tempoDemo < 62) setTimeout(passo, lento ? 4000 : 1800);
+        partite = elenco.map(function (d, i) {
+          var fin = d.eventi.filter(function (c) { return minuti(c[0]) <= tempoDemo; });
+          var p = leggiEventi(fin, d.casa, d.ospite);
+          p.id = 'demo' + i; p.torneo = d.torneo; p.dove = d.dove;
+          return p;
+        });
+        disegna();
+        if (tempoDemo < 64) setTimeout(passo, lento ? 4000 : 1800);
       }
       passo();
     }).catch(nascondi);
@@ -203,28 +251,35 @@
           }
         });
         if (!candidate.length) { nascondi(); return; }
-        return seguiPrima(candidate.slice(0, 3));
+        return segui(candidate.slice(0, 6));
       })
       .catch(nascondi);
   }
 
-  function seguiPrima(lista) {
+  function segui(lista) {
     var presi = lista.map(function (g) {
       return chiedi(API + '/game_events/' + g.id)
         .then(function (j) { return { g: g, righe: righeDi(j).map(function (r) { return r.celle; }) }; })
         .catch(function () { return null; });
     });
     return Promise.all(presi).then(function (esiti) {
-      var viva = null, conclusa = null;
+      var vive = [], concluse = [];
       esiti.forEach(function (e) {
         if (!e || !e.righe.length) return;
         var p = leggiEventi(e.righe, e.g.casa, e.g.ospite);
-        p.torneo = e.g.torneo; p.dove = e.g.dove;
-        if (!p.finita && !viva) viva = p;
-        if (p.finita && !conclusa) conclusa = p;
+        p.id = e.g.id; p.torneo = e.g.torneo; p.dove = e.g.dove;
+        (p.finita ? concluse : vive).push(p);
       });
-      var scelta = viva || conclusa;
-      if (scelta) { partita = scelta; disegna(scelta); } else { nascondi(); }
+      /* prima quelle in corso; se non ce n'è nessuna resta l'ultima conclusa */
+      var nuove = vive.length ? vive : concluse.slice(0, 1);
+      if (!nuove.length) { nascondi(); return; }
+      var seguita = partite[scelta] && partite[scelta].id;
+      partite = nuove;
+      scelta = 0;
+      for (var i = 0; i < partite.length; i++) {
+        if (partite[i].id === seguita) { scelta = i; break; }   // non cambiare sotto le mani
+      }
+      disegna();
     });
   }
 
