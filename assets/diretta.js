@@ -331,7 +331,7 @@
 
   /* ── modalità dimostrativa ── */
   function avviaDemo() {
-    fetch('data/diretta-demo.json').then(function (r) { return r.json(); }).then(function (elenco) {
+    fetch('data/diretta-demo.json?v=' + (window.TIUH_V || '')).then(function (r) { return r.json(); }).then(function (elenco) {
       function minuti(m) {
         /* «Spielende» non ha minuto: vale come ultimissimo evento, non come primo */
         if (!/^\d+:\d+$/.test(m || '')) return 999;
