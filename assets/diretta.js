@@ -23,6 +23,17 @@
   var demo = /[?&]diretta=demo/.test(location.search);
   var radice = null, statoAperto = false, tempoDemo = 0;
   var partite = [], scelta = 0;   // più squadre del club possono giocare insieme
+  var giaMostrata = false;
+
+  /* La prima volta che si trova una partita in corso il pannello si apre da solo:
+     deve saltare all'occhio. Poi resta come l'ha lasciato chi guarda, anche
+     cambiando pagina, così non diventa invadente. */
+  function ricorda(v) {
+    try { sessionStorage.setItem('tiuh-diretta', v); } catch (e) {}
+  }
+  function ricordato() {
+    try { return sessionStorage.getItem('tiuh-diretta'); } catch (e) { return null; }
+  }
 
   /* I motivi delle penalità arrivano in tedesco dal referto elettronico. */
   var MOTIVI = {
@@ -197,6 +208,7 @@
     });
     radice.querySelector('.dir-barra').addEventListener('click', function () {
       statoAperto = !statoAperto;
+      ricorda(statoAperto ? 'aperto' : 'chiuso');
       var pan = radice.querySelector('.dir-pannello');
       pan.hidden = !statoAperto;
       this.setAttribute('aria-expanded', String(statoAperto));
@@ -206,8 +218,21 @@
     if (vivo) vivo.textContent = 'Punteggio ' + nostri + ' a ' + loro + ', ' + stato;
   }
 
-  function nascondi() {
+  function nascondi(motivo) {
+    if (motivo && window.console && console.warn) {
+      console.warn('[diretta] niente da mostrare:', motivo && motivo.message || motivo);
+    }
     if (radice) radice.setAttribute('data-visibile', 'false');
+  }
+
+  /* La prima volta che compare, il pannello si apre da solo: deve saltare
+     all'occhio. Poi rispetta la scelta di chi guarda, anche cambiando pagina. */
+  function apriLaPrimaVolta() {
+    if (giaMostrata) return;
+    giaMostrata = true;
+    var scelto = ricordato();
+    statoAperto = (scelto === null) ? true : (scelto === 'aperto');
+    if (scelto === null) ricorda('aperto');
   }
 
   /* ── modalità dimostrativa ── */
@@ -227,6 +252,7 @@
           p.id = 'demo' + i; p.torneo = d.torneo; p.dove = d.dove;
           return p;
         });
+        apriLaPrimaVolta();
         disegna();
         if (tempoDemo < 64) setTimeout(passo, lento ? 4000 : 1800);
       }
